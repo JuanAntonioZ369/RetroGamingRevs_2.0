@@ -1,0 +1,12 @@
+{
+  "name": "retroplay-electron",
+  "version": "1.0.0",
+  "description": "RetroPlay Electron App with RetroArch Netplay",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {
+    "electron": "^25.0.0"
+  }
+}

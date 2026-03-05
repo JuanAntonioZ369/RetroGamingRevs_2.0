@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+
+
+
+  <title>GamingRevs - LobbyMultiplayer</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#0d33f2",
+            "background-light": "#f5f6f8",
+            "background-dark": "#101322",
+          },
+          fontFamily: {
+            "display": ["Spline Sans"],
+            "mono": ["JetBrains Mono"],
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px",
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    .neon-glow   { box-shadow: 0 0 15px rgba(13, 51, 242, 0.4); }
+    .neon-border { border: 1px solid rgba(13, 51, 242, 0.3); }
+    ::-webkit-scrollbar             { width: 6px; }
+    ::-webkit-scrollbar-track       { background: transparent; }
+    ::-webkit-scrollbar-thumb       { background: rgba(13, 51, 242, 0.2); border-radius: 10px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(13, 51, 242, 0.4); }
+  </style>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen flex flex-col overflow-hidden">
+
+  <!-- ===================== HEADER ===================== -->
+  <header class="h-16 border-b border-primary/10 bg-background-light dark:bg-background-dark flex items-center justify-between px-6 z-10">
+
+    <!-- Back button -->
+    <button id="backBtn" onclick="backToChoice()" class="flex items-center space-x-2 group text-slate-600 dark:text-slate-400 hover:text-primary transition-colors mr-4">
+      <span class="material-icons text-2xl group-hover:-translate-x-1 transition-transform">arrow_back</span>
+      <span class="text-sm font-medium tracking-widest uppercase">Back</span>
+    </button>
+
+    <!-- Logo -->
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-primary flex items-center justify-center rounded-lg shadow-lg shadow-primary/20">
+        <span class="material-icons text-white">videogame_asset</span>
+      </div>
+      <h1 class="text-xl font-bold tracking-tight text-primary uppercase italic">
+        GAMINGREVS
+        <span class="text-xs font-normal opacity-50 not-italic ml-2">MultiplayerLobby</span>
+      </h1>
+    </div>
+
+    <!-- User info -->
+    <div class="flex items-center gap-3 border-l border-primary/10 pl-6">
+      <div class="text-right">
+        <p class="text-sm font-semibold">NamePlayer</p>
+      </div>
+      <img
+        class="w-10 h-10 rounded-full border-2 border-primary object-cover"
+        alt="Gaming user profile avatar"
+        src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9GUUlZ_FL30C1MCXMpWxNbt1vZPRn2pH-gn7QZoOcJ4WnA1mtP3HbXYiOdEezMRbX1BZz4OMcvAW3022dCE2b2Wxfy_cTy-MtoZRSGrPxUEbjDPzOYbDMGtc2d2iAP5LQ_gfeWp_Mwt-Ez_D1xyuSVz49MkwporYgRoqVF6x7dxdY16pj1ozmVgPvEev7pj9Z18gw4vPkA1jpWO5INbJScJronfdl5XVv9STdYGdOUHf2pVUR2gTGyXIeKhH0IVe1DiNZaxZLIeQ"
+      />
+    </div>
+
+  </header>
+  <!-- =================== END HEADER =================== -->
+
+
+  <!-- ===================== MAIN ===================== -->
+  <main class="flex-1 flex overflow-hidden">
+
+    <!-- ─── Left Sidebar / Info ─── -->
+    <nav class="w-72 border-r border-primary/10 p-6 flex flex-col gap-4 bg-background-light/80 dark:bg-background-dark/80">
+      <div class="space-y-6">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-primary/60 px-4">System Info</p>
+        <div class="px-4 py-3 bg-background-light dark:bg-slate-800 rounded-lg">
+          <p class="text-xs font-semibold">Core</p>
+          <p class="text-sm">Beetle PSX</p>
+        </div>
+        <div class="px-4 py-3 bg-background-light dark:bg-slate-800 rounded-lg">
+          <p class="text-xs font-semibold">Game</p>
+          <p class="text-sm">Crash Bandicoot</p>
+        </div>
+        <div class="px-4 py-3 bg-background-light dark:bg-slate-800 rounded-lg">
+          <p class="text-xs font-semibold">Controller</p>
+          <p class="text-sm">DualShock</p>
+        </div>
+      </div>
+    </nav>
+
+    <!-- ─── Center / Main Interaction Area ─── -->
+    <section class="flex-1 p-12 bg-gradient-to-br from-background-light to-white dark:from-background-dark dark:to-background-dark/50 flex flex-col items-center justify-center relative">
+
+      <!-- Background decoration -->
+      <div class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
+        <span class="material-icons text-[40rem]">videogame_asset</span>
+      </div>
+
+      <div class="max-w-xl w-full text-center space-y-8 relative z-10">
+
+<!-- Dynamic area: choice / join / create -->
+        <div id="choiceView" class="space-y-8 text-center">
+          <h2 class="text-4xl font-extrabold tracking-tight">Multiplayer Lobby</h2>
+          <p class="text-slate-500 dark:text-slate-400">Create a room or join one?</p>
+          <div class="flex justify-center gap-8 mt-6">
+            <button onclick="showCreate()" class="w-48 py-4 bg-primary text-white rounded-xl neon-glow transition-transform hover:scale-105">
+              <span class="material-icons align-middle">add_box</span>
+              <span class="ml-2 font-semibold">Create Room</span>
+            </button>
+            <button onclick="showJoin()" class="w-48 py-4 bg-transparent border-2 border-primary text-primary rounded-xl transition-transform hover:scale-105">
+              <span class="material-icons align-middle">login</span>
+              <span class="ml-2 font-semibold">Join Room</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Join room panel -->
+        <div id="joinView" class="hidden opacity-0 transform scale-95 transition-all duration-500">
+          <h2 class="text-4xl font-extrabold tracking-tight">Enter Room Code</h2>
+          <p class="text-slate-500 dark:text-slate-400">Paste the invite code below</p>
+          <div class="mt-6">
+            <input id="joinCode" type="text" maxlength="6" placeholder="XXXXXX" class="w-64 text-center text-2xl font-mono border-b-2 border-primary focus:outline-none" />
+          </div>
+          <div class="mt-8 flex justify-center gap-4">
+            <button onclick="conectarSala(document.getElementById('joinCode').value)" class="px-8 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 font-semibold">Connect</button>
+          </div>
+          <!-- visual friend slots placeholder -->
+          <div class="mt-10 grid grid-cols-4 gap-4">
+            <div class="h-20 bg-background-light dark:bg-slate-700 rounded-lg flex items-center justify-center opacity-30">Friend</div>
+            <div class="h-20 bg-background-light dark:bg-slate-700 rounded-lg flex items-center justify-center opacity-30">Friend</div>
+            <div class="h-20 bg-background-light dark:bg-slate-700 rounded-lg flex items-center justify-center opacity-30">Friend</div>
+            <div class="h-20 bg-background-light dark:bg-slate-700 rounded-lg flex items-center justify-center opacity-30">Friend</div>
+          </div>
+        </div>
+
+        <!-- Create room panel -->
+        <div id="createView" class="hidden opacity-0 transform scale-95 transition-all duration-500">
+          <h2 class="text-4xl font-extrabold tracking-tight">Room Created</h2>
+          <p class="text-slate-500 dark:text-slate-400">Share this code with friends</p>
+          <div class="mt-6">
+            <div class="font-mono text-7xl font-bold tracking-[0.2em] text-primary drop-shadow-[0_0_8px_rgba(13,51,242,0.4)]">
+              <span id="generatedCode">AB12CD</span>
+            </div>
+          </div>
+          <!-- slots preview -->
+          <div class="mt-10 grid grid-cols-4 gap-4">
+            <div class="h-20 bg-background-light dark:bg-slate-700 rounded-lg flex items-center justify-center">Host</div>
+            <div class="h-20 bg-background-light dark:bg-slate-700 rounded-lg flex items-center justify-center opacity-30">Vacant</div>
+            <div class="h-20 bg-background-light dark:bg-slate-700 rounded-lg flex items-center justify-center opacity-30">Vacant</div>
+            <div class="h-20 bg-background-light dark:bg-slate-700 rounded-lg flex items-center justify-center opacity-30">Vacant</div>
+          </div>
+          <!-- Start Game button -->
+          <div class="mt-8 flex justify-center gap-4">
+            <button onclick="iniciarJuegoMultijugador('host', document.getElementById('generatedCode').textContent)" class="px-8 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 font-semibold">Comenzar Juego</button>
+          </div>
+        </div>
+
+        <!-- End dynamic area -->
+
+      </div>
+    </section>
+
+    <!-- ─── Right Sidebar / Social ─── -->
+    <aside class="w-80 border-l border-primary/10 flex flex-col bg-slate-50 dark:bg-background-dark/80">
+
+      <!-- Sidebar header -->
+      <div class="p-6 border-b border-primary/10 flex items-center justify-between">
+        <h3 class="font-bold tracking-tight">Social</h3>
+      </div>
+
+      <!-- Search -->
+      <div class="p-4 border-b border-primary/5">
+        <div class="relative">
+          <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
+          <input
+            class="w-full bg-background-light dark:bg-slate-900 border-primary/10 rounded-lg pl-10 text-xs focus:ring-primary focus:border-primary"
+            placeholder="Find friends..."
+            type="text"
+          />
+        </div>
+      </div>
+
+      <!-- Friends list -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4">
+
+        <p class="text-[10px] font-bold uppercase tracking-widest text-primary/60">Online — 4</p>
+
+        <!-- Friend: Tifa_Lockhart -->
+        <div class="group flex items-center gap-3 p-2 rounded-xl hover:bg-primary/5 transition-all cursor-default">
+          <div class="relative">
+            <img
+              class="w-10 h-10 rounded-full border-2 border-green-500/50"
+              alt="Online friend avatar"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEhgICp19cmhu6lMsYCXsu6h1B5kcyCJP5_9nlP_1aH_n9dQvks1h3yrDK2fNEyTqAMUoIvjtY6ZSFtm7nypJ8-Yfkm7IXza9Q58O22PycwKwTH0rBdXI5EAESpzg8Q8Bx-Zi4WZiy34w8kOpaIJqC2FnM0PKdubEYmySYM7mbk0npD_OW_e87bK0QDK0QdmKMAksxgBU3244OzdSYdyyNKoMOHPsSEEqDeO1HO3u7TOCnaO3O7Ptx9HXJ9W2w4VkrWVCC0A-oHH4"
+            />
+            <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background-dark rounded-full"></span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold truncate">Tifa_Lockhart</p>
+            <p class="text-[10px] text-green-500 font-medium">Online</p>
+          </div>
+          <button class="bg-primary hover:bg-primary/80 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            <span class="material-icons text-sm">person_add</span>
+          </button>
+        </div>
+
+        <!-- Friend: Sephiroth_X -->
+        <div class="group flex items-center gap-3 p-2 rounded-xl hover:bg-primary/5 transition-all cursor-default">
+          <div class="relative">
+            <img
+              class="w-10 h-10 rounded-full border-2 border-primary/50"
+              alt="Friend in-game avatar"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZthup4G8nSY5L45_pg4s4MsQJC9KPfzmb_HNFi9VvjcrplpwHqokTOerDHGmFKjGk2znnodwGdgDg5zK_xdhdqbUdopKKUxnLOMkvXz4mDw5xanRhtDI3QFt4hM3utVMQVktm1mrHJywONuiL979w7u4rsE2nZ5QPLZuXUsUB9MhOoNnK1_oyrMr4FID1bTLhTGIqwmbYD-HkrYvbt0ZDelK8k_Qw76GQA8mYZmWQvLb5xmsZSey5-baMN5P03GniKNgE1n8vjqE"
+            />
+            <span class="absolute bottom-0 right-0 w-3 h-3 bg-primary border-2 border-background-dark rounded-full"></span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold truncate">Sephiroth_X</p>
+            <p class="text-[10px] text-primary font-medium">In: Final Fantasy VII</p>
+          </div>
+          <button class="bg-primary hover:bg-primary/80 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            <span class="material-icons text-sm">person_add</span>
+          </button>
+        </div>
+
+        <!-- Friend: Aerith_G -->
+        <div class="group flex items-center gap-3 p-2 rounded-xl hover:bg-primary/5 transition-all cursor-default">
+          <div class="relative">
+            <img
+              class="w-10 h-10 rounded-full border-2 border-green-500/50"
+              alt="Online friend avatar"
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnj4xfK0IeXXYzvbB-sLKugCtrqqBwMLhX-gPsrgjwg45zm6AfF7db-2CY-iq_5G6P04nJO143PYl1v1oyQOIbGOe4vWEIxFCpmKEawTwnRABMkilTNbLHXzjSztu5StG7kJsFeRw9OydJrS9xgm3gYtRSMoXf2XZXWt5XWDdS9ywt73p-L03fB1zspJk_etIzqJ2AjN3rd6qTs63KMZU0cHVvAADaZHkFOeuKDlx9X_gCgnLXfpEY6DL3KmE36Wa3B5cJVk9HyK0"
+            />
+            <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background-dark rounded-full"></span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold truncate">Aerith_G</p>
+            <p class="text-[10px] text-green-500 font-medium">Online</p>
+          </div>
+          <button class="bg-primary hover:bg-primary/80 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            <span class="material-icons text-sm">person_add</span>
+          </button>
+        </div>
+
+        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 pt-4">Offline — 12</p>
+
+        <!-- Friend: Zack_Fair (offline) -->
+        <div class="flex items-center gap-3 p-2 opacity-40 grayscale">
+          <img
+            class="w-10 h-10 rounded-full"
+            alt="Offline friend avatar"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuABirEdd3eNOWiWP9_vsGrHw52Az8L_b9-Id26po7WwoxA0--iFtKNcbPStWRO7UeEY8LF-a0d7Mx0Z386m7BqONLUCcKiEJmaJwK7RoZXUCbvowxhChtVYhqPt7VCshRLOYVPZ7hVLyYZ98c9-2_cNsI1eEncNCM3zOKQrLbOeYzuh0M_jDZXtfjVspPtjsvzfmwEMktBqm4cKS9j4zolKoX8-UtLJLNPjkZ5c54Yxk-2nWWpVXINZwDctO17pM2Gf_gu-Q3AR3s4"
+          />
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold truncate">Zack_Fair</p>
+            <p class="text-[10px]">Last seen 3d ago</p>
+          </div>
+        </div>
+
+      </div>
+    </aside>
+
+  </main>
+  <!-- =================== END MAIN =================== -->
+
+
+  <!-- ===================== FOOTER ===================== -->
+  <footer class="h-8 bg-primary/5 border-t border-primary/10 flex items-center justify-between px-6 text-[10px] uppercase font-bold tracking-widest text-primary/60">
+    <div class="flex items-center gap-4">
+      <div class="flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_5px_rgba(13,51,242,1)]"></span>
+        Server Latency: 24ms
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="material-icons text-[10px]">memory</span>
+        CPU Usage: 12%
+      </div>
+    </div>
+  </footer>
+  <!-- =================== END FOOTER =================== -->
+
+  <script>
+    const { getMandos, getRAM, getCPU, getNickName } = require('../status')
+    const { jugarMultijugador, conectarSala } = require('../gameOnly');
+
+    // Extract game parameters from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const gameParam = urlParams.get('game');
+    const gameTitle = urlParams.get('title');
+    let carpeta = '', archivo = '';
+    if (gameParam) {
+      [carpeta, archivo] = gameParam.split('/');
+    }
+
+    // Wrapper functions for multiplayer game start
+    function iniciarJuegoMultijugador(mode, roomCode) {
+      console.log('Iniciando juego en modo:', mode, 'con sala:', roomCode);
+      jugarMultijugador(roomCode, carpeta, archivo);
+    }
+
+    function showView(id) {
+      ['choiceView','joinView','createView'].forEach(v => {
+        const el = document.getElementById(v);
+        if (el) {
+          el.classList.add('hidden');
+          el.classList.remove('opacity-100','scale-100');
+        }
+      });
+      const view = document.getElementById(id);
+      if (view) {
+        view.classList.remove('hidden');
+        setTimeout(() => {
+          view.classList.add('opacity-100','scale-100');
+        }, 20);
+      }
+    }
+
+    function showJoin() {
+      showView('joinView');
+      document.body.classList.add('bg-slate-800','dark:bg-slate-900');
+    }
+
+    function showCreate() {
+      const code = Math.random().toString(36).substring(2,8).toUpperCase();
+      document.getElementById('generatedCode').textContent = code;
+      showView('createView');
+      document.body.classList.add('bg-slate-800','dark:bg-slate-900');
+    }
+
+    function backToChoice() {
+      const createVisible = !document.getElementById('createView').classList.contains('hidden');
+      const joinVisible = !document.getElementById('joinView').classList.contains('hidden');
+      // if in a sub-view, go back to choice view
+      if (createVisible || joinVisible) {
+        showView('choiceView');
+        document.body.classList.remove('bg-slate-800','dark:bg-slate-900');
+        return;
+      }
+      // already at choice view -> navigate back to GameModeSelection preserving query params
+      const target = 'GameModeSelection.html' + window.location.search;
+      window.location.href = target;
+    }
+
+    // initialize to choice view and wire back button
+    showView('choiceView');
+    const backBtn = document.getElementById('backBtn');
+    if (backBtn) backBtn.onclick = backToChoice;
+  </script>
+
+</body>
+</html>
