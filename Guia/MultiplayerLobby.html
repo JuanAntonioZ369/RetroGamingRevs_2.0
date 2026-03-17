@@ -72,7 +72,7 @@
     <!-- User info -->
     <div class="flex items-center gap-3 border-l border-primary/10 pl-6">
       <div class="text-right">
-        <p class="text-sm font-semibold">NamePlayer</p>
+        <p class="text-sm font-semibold" id="nickname">NamePlayer</p>
       </div>
       <img
         class="w-10 h-10 rounded-full border-2 border-primary object-cover"
@@ -98,11 +98,11 @@
         </div>
         <div class="px-4 py-3 bg-background-light dark:bg-slate-800 rounded-lg">
           <p class="text-xs font-semibold">Game</p>
-          <p class="text-sm">Crash Bandicoot</p>
+          <p class="text-sm" id="gameTitle">-</p>
         </div>
         <div class="px-4 py-3 bg-background-light dark:bg-slate-800 rounded-lg">
           <p class="text-xs font-semibold">Controller</p>
-          <p class="text-sm">DualShock</p>
+          <p class="text-sm" id="mando">-</p>
         </div>
       </div>
     </nav>
@@ -141,14 +141,7 @@
             <input id="joinCode" type="text" maxlength="6" placeholder="XXXXXX" class="w-64 text-center text-2xl font-mono border-b-2 border-primary focus:outline-none" />
           </div>
           <div class="mt-8 flex justify-center gap-4">
-            <button onclick="conectarSala(document.getElementById('joinCode').value)" class="px-8 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 font-semibold">Connect</button>
-          </div>
-          <!-- visual friend slots placeholder -->
-          <div class="mt-10 grid grid-cols-4 gap-4">
-            <div class="h-20 bg-background-light dark:bg-slate-700 rounded-lg flex items-center justify-center opacity-30">Friend</div>
-            <div class="h-20 bg-background-light dark:bg-slate-700 rounded-lg flex items-center justify-center opacity-30">Friend</div>
-            <div class="h-20 bg-background-light dark:bg-slate-700 rounded-lg flex items-center justify-center opacity-30">Friend</div>
-            <div class="h-20 bg-background-light dark:bg-slate-700 rounded-lg flex items-center justify-center opacity-30">Friend</div>
+            <button onclick="conectarSala(document.getElementById('joinCode').value, carpeta, archivo)" class="px-8 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 font-semibold">Connect</button>
           </div>
         </div>
 
@@ -160,13 +153,9 @@
             <div class="font-mono text-7xl font-bold tracking-[0.2em] text-primary drop-shadow-[0_0_8px_rgba(13,51,242,0.4)]">
               <span id="generatedCode">AB12CD</span>
             </div>
-          </div>
-          <!-- slots preview -->
-          <div class="mt-10 grid grid-cols-4 gap-4">
-            <div class="h-20 bg-background-light dark:bg-slate-700 rounded-lg flex items-center justify-center">Host</div>
-            <div class="h-20 bg-background-light dark:bg-slate-700 rounded-lg flex items-center justify-center opacity-30">Vacant</div>
-            <div class="h-20 bg-background-light dark:bg-slate-700 rounded-lg flex items-center justify-center opacity-30">Vacant</div>
-            <div class="h-20 bg-background-light dark:bg-slate-700 rounded-lg flex items-center justify-center opacity-30">Vacant</div>
+            <div id="loadingBar" class="hidden mt-4 w-full bg-slate-700 rounded-full h-1.5">
+              <div class="bg-primary h-1.5 rounded-full animate-pulse w-full"></div>
+            </div>
           </div>
           <!-- Start Game button -->
           <div class="mt-8 flex justify-center gap-4">
@@ -286,21 +275,14 @@
   <!-- ===================== FOOTER ===================== -->
   <footer class="h-8 bg-primary/5 border-t border-primary/10 flex items-center justify-between px-6 text-[10px] uppercase font-bold tracking-widest text-primary/60">
     <div class="flex items-center gap-4">
-      <div class="flex items-center gap-2">
-        <span class="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_5px_rgba(13,51,242,1)]"></span>
-        Server Latency: 24ms
-      </div>
-      <div class="flex items-center gap-2">
-        <span class="material-icons text-[10px]">memory</span>
-        CPU Usage: 12%
-      </div>
     </div>
   </footer>
   <!-- =================== END FOOTER =================== -->
 
   <script>
-    const { getMandos, getRAM, getCPU, getNickName } = require('../status')
     const { jugarMultijugador, conectarSala } = require('../gameOnly');
+    const { getNickName, getID } = require('../status')
+    const { ipcRenderer } = require('electron');
 
     // Extract game parameters from URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -311,10 +293,26 @@
       [carpeta, archivo] = gameParam.split('/');
     }
 
+    // Datos estáticos que se cargan una sola vez
+    document.getElementById('nickname').textContent = getNickName();
+    if (gameTitle) document.getElementById('gameTitle').textContent = gameTitle;
+
+
     // Wrapper functions for multiplayer game start
     function iniciarJuegoMultijugador(mode, roomCode) {
-      console.log('Iniciando juego en modo:', mode, 'con sala:', roomCode);
-      jugarMultijugador(roomCode, carpeta, archivo);
+      jugarMultijugador(roomCode, carpeta, archivo)
+      
+      document.getElementById('generatedCode').textContent = 'XXXXXX'
+      document.getElementById('loadingBar').classList.remove('hidden')
+
+      const interval = setInterval(async () => {
+        const code = await getID()
+        if (code !== 'XXXXXX') {
+          clearInterval(interval)
+          document.getElementById('loadingBar').classList.add('hidden')
+          document.getElementById('generatedCode').textContent = code
+        }
+      }, 2000)
     }
 
     function showView(id) {
@@ -339,8 +337,8 @@
       document.body.classList.add('bg-slate-800','dark:bg-slate-900');
     }
 
-    function showCreate() {
-      const code = Math.random().toString(36).substring(2,8).toUpperCase();
+    async function showCreate() {
+      const code = await getID()
       document.getElementById('generatedCode').textContent = code;
       showView('createView');
       document.body.classList.add('bg-slate-800','dark:bg-slate-900');
@@ -349,19 +347,26 @@
     function backToChoice() {
       const createVisible = !document.getElementById('createView').classList.contains('hidden');
       const joinVisible = !document.getElementById('joinView').classList.contains('hidden');
-      // if in a sub-view, go back to choice view
       if (createVisible || joinVisible) {
         showView('choiceView');
         document.body.classList.remove('bg-slate-800','dark:bg-slate-900');
+        // limpiar &view=create de la URL sin recargar
+        const newUrl = window.location.href.replace('&view=create', '')
+        window.history.replaceState({}, '', newUrl)
         return;
       }
-      // already at choice view -> navigate back to GameModeSelection preserving query params
       const target = 'GameModeSelection.html' + window.location.search;
       window.location.href = target;
     }
 
     // initialize to choice view and wire back button
-    showView('choiceView');
+    const viewParam = urlParams.get('view')
+
+    if (viewParam === 'create') {
+      showCreate()
+    } else {
+      showView('choiceView')
+    }
     const backBtn = document.getElementById('backBtn');
     if (backBtn) backBtn.onclick = backToChoice;
   </script>

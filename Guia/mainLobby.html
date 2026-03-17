@@ -4,8 +4,6 @@
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
 
-
-
   <title>GamingRevs</title>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -73,6 +71,7 @@
       <div class="p-6 flex items-center gap-3">
         <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/30">
           <span class="material-icons-round">videogame_asset</span>
+          
         </div>
         <h1 class="font-bold text-xl tracking-tight text-slate-900 dark:text-white">
           GAMING<span class="text-primary">REVS</span>
@@ -170,24 +169,8 @@
               Emulator Core: Desactive
             </span>
           </div>
-          <div class="flex items-center gap-2">
-            <span class="material-icons-round text-[14px]">sports_esports</span>
-            <span id="mando">
-              <!-- DualShock 4 Connected -->
-            </span>
-          </div>
         </div>
         <div class="flex items-center gap-6">
-          <div class="flex items-center gap-1.5">
-            
-            <span id = "ram"></span>
-            <!-- 8% ram -->
-          </div>
-          <span class="material-icons-round text-[14px]">memory</span>
-          <div class="flex items-center gap-1.5">
-            <span id = "cpu"></span>
-            <!-- 8% CPU -->
-          </div>
         </div>
       </footer>
 
@@ -274,35 +257,15 @@
     <span class="material-icons-round text-[400px]">change_history</span>
   </div>
 
-  <script>
-    const { getMandos, getRAM, getCPU, getNickName } = require('../status')
 
+
+ <!---------------- SCRIP  ----------------->
+
+  <script>
+    const { getNickName } = require('../status')
     const { ipcRenderer } = require('electron');
 
-
-
     document.getElementById('nickname').textContent = getNickName();
-
-    async function actualizarCPU() {
-      const cpu = await getCPU()
-      document.getElementById('cpu').textContent = cpu + ' CPU'
-    }
-
-    const result = getMandos()
-    const ram = getRAM()
-    document.getElementById('ram').textContent = ram.ramPorcentaje + ' RAM'
-    document.getElementById('mando').textContent = result.cantidad + ' mando(s):  ' + result.mandos.join(', ')
-    actualizarCPU()
-
-    setInterval(() => {
-      const result = getMandos()
-      const ram = getRAM()
-      document.getElementById('ram').textContent = ram.ramPorcentaje + ' RAM'
-      document.getElementById('mando').textContent = result.cantidad + ' mando(s):  ' + result.mandos.join(', ')
-      actualizarCPU()
-    }, 5000);
-
-
 
     let games = [];
     let currentView = 'list'; // 'grid' or 'list'

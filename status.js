@@ -22,7 +22,7 @@ function enviarComando(comando) {
       resolve(msg.toString())
     })
 
-    client.send(comando, RETROARCH_PORT, 'localhost', (err) => {
+    client.send(Buffer.from(comando), RETROARCH_PORT, 'localhost', (err) => {
       if (err) {
         clearTimeout(timeout)
         client.close()
@@ -35,8 +35,16 @@ function enviarComando(comando) {
 // ─── 1. Emulador activo o no ───
 async function getEstadoEmulador() {
   const res = await enviarComando('GET_STATUS')
-  if (!res) return { activo: false, estado: 'Apagado' }
-  return { activo: true, estado: res.trim() }
+  if (!res) return { activo: false, juego: null, crc32: null }
+
+  const match = res.trim().match(/GET_STATUS (\w+) \w+,(.+),crc32=(\w+)/)
+  if (!match) return { activo: true, juego: null, crc32: null }
+
+  return {
+    activo: true,
+    juego: match[2],
+    crc32: match[3]
+  }
 }
 
 // ─── 2. Mandos conectados ───
@@ -66,7 +74,7 @@ function getMandos() {
   try {
     const result = execSync(
       `powershell -command "Get-PnpDevice | Where-Object {$_.Class -eq 'HIDClass' -and $_.Status -eq 'OK'} | Select-Object FriendlyName, HardwareID | ConvertTo-Json"`,
-      { timeout: 3000 }
+      { timeout: 5000 }
     ).toString()
     const parsed = JSON.parse(result)
     const lista = Array.isArray(parsed) ? parsed : [parsed]
@@ -236,6 +244,27 @@ function setPassword(nuevaPassword) {
   }
 }
 
+// ─── 10. ID ───
+async function obtenerSalas() {
+  const res = await fetch('http://lobby.libretro.com/list/')
+  const data = await res.json()
+  return data
+}
+
+async function getID() {
+  const nick = getNickName()
+  const emulador = await getEstadoEmulador()
+  const salas = await obtenerSalas()
+
+  const miSala = salas.find(s =>
+    s.fields.username === nick &&
+    s.fields.game_name === emulador.juego &&
+    s.fields.game_crc.toLowerCase() === emulador.crc32
+  )
+
+  return miSala ? miSala.fields.id : 'XXXXXX'
+}
+
 // ─── FUNCIÓN PRINCIPAL ───
 async function getStatus() {
   const [emulador, fps, juego, latencia] = await Promise.all([
@@ -271,5 +300,7 @@ module.exports = {
   getBIOS,
   getCPU,
   getRAM,
-  getLatencia
+  getLatencia,
+
+  getID
 } 

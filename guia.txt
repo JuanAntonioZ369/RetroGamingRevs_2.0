@@ -1,0 +1,16 @@
+
+1. ajustar el status para obtener room list al iniciar online (que me bote los datos al dar join)
+
+1.5. Logo
+
+2. servidor local prueba para pasar datos imoportantes:
+    room, bios, core, contraseña, nickname, 
+    y alguna configuracion
+
+3. dejar los botones conectadfos con el backend (gameOnly, status y main)
+
+4. borrar los loops
+
+5. agregar usuarios con supa
+
+

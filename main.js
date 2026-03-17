@@ -2,6 +2,8 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 const fs = require('fs');
+const { getNickName } = require('./status');
+
 let mainWindow;
 
 function createWindow() {
@@ -14,7 +16,15 @@ function createWindow() {
     }
   });
 
-  mainWindow.loadFile('Guia/mainLobby.html'); // Carga tu HTML existente
+  mainWindow.loadFile('Guia/mainLobby.html');
+}
+
+// ─── Detectar en qué página estamos ───
+function getPageName(url) {
+  if (url.includes('mainLobby')) return 'mainLobby';
+  if (url.includes('gameModeSelection')) return 'gameModeSelection';
+  if (url.includes('MultiplayerLobby')) return 'MultiplayerLobby';
+  return null;
 }
 
 function getGamesList() {
@@ -32,7 +42,7 @@ function getGamesList() {
       if (cueFile) {
         games.push({
           title: folder,
-          romPath: folder + '/' + cueFile  
+          romPath: folder + '/' + cueFile
         });
       }
     });
@@ -43,56 +53,26 @@ function getGamesList() {
 }
 
 app.whenReady().then(() => {
-    createWindow();
-    // Enviar lista de juegos al renderer cuando se carga mainLobby
-    mainWindow.webContents.on('dom-ready', () => {
-      const url = mainWindow.webContents.getURL();
-      if (url.includes('mainLobby.html')) {
-        const games = getGamesList();
-        mainWindow.webContents.send('games-list', games);
-      }
-    });
-    // Iniciar host automáticamente para un juego
-    // startNetplay('host', null, '55435', 'games/WinningEleven4/Winning Eleven 4 - full english names by xhk007 v1.0.cue', 'nyc'); // Para WAN
+  createWindow();
+
+  mainWindow.webContents.on('dom-ready', () => {
+    const url = mainWindow.webContents.getURL();
+    const page = getPageName(url);
+
+    // Enviar lista de juegos solo en mainLobby
+    if (page === 'mainLobby') {
+      const games = getGamesList();
+      mainWindow.webContents.send('games-list', games);
+    }
+  });
+
+  mainWindow.on('closed', () => {});
 });
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
-// Función para iniciar RetroArch con netplay
-ipcMain.handle('start-netplay', async (event, { mode, ip, port, romPath, mitmServer }) => {
-  const retroarchPath = path.join(__dirname, 'RetroArch-Win64', 'retroarch.exe');
-  const corePath = path.join(__dirname, 'RetroArch-Win64', 'cores', 'mednafen_psx_libretro.dll');
-  const fullRomPath = path.join(__dirname, 'games', romPath);
-
-  let args = ['--core', corePath, fullRomPath];
-
-  if (mode === 'host') {
-    args.push('--host');
-    if (mitmServer) {
-      args.push('--netplay-mitm-server', mitmServer);
-    } else {
-      args.push('--port', port);
-    }
-  } else if (mode === 'client') {
-    args.push('--connect', ip, '--port', port);
-    if (mitmServer) {
-      args.push('--netplay-mitm-server', mitmServer);
-    }
-  }
-
-  console.log('Ejecutando RetroArch con args:', args);
-
-  const retroarch = spawn(retroarchPath, args, { stdio: 'inherit' });
-
-  retroarch.on('close', (code) => {
-    console.log(`RetroArch cerró con código ${code}`);
-  });
-
-  retroarch.on('error', (err) => {
-    console.error('Error al ejecutar RetroArch:', err);
-  });
-
-  return { success: true };
+ipcMain.handle('start-netplay', async (event, params) => {
+  return startNetplay(params);
 });

@@ -1,0 +1,56 @@
+
+    "fields": {
+      "id": 530434,
+      "username": "Juan Antonio Zegarra Condori",
+      "country": "us",
+      "game_name": "Tekken 3",
+      "game_crc": "4FB72051",
+      "core_name": "Beetle PSX",
+      "core_version": "0.9.44.1 d5e2d68",
+      "subsystem_name": "N/A",
+      "retroarch_version": "1.22.2",
+      "frontend": "win32 x64",
+      "ip": "38.25.8.60",
+      "port": 55435,
+      "mitm_ip": "us-east1.relay.retroarch.com",
+      "mitm_port": 55435,
+      "mitm_session": "oWNXFpUqAyiZxJXH",
+      "host_method": 3,
+      "has_password": false,
+      "has_spectate_password": false,
+      "connectable": true,
+      "is_retroarch": true,
+      "player_count": 1,
+      "spectator_count": 0,
+      "created": "2026-03-16T18:16:58.20928621Z",
+      "updated": "2026-03-16T18:17:18.615288318Z"
+    }
+
+
+    
+    "fields": {
+      "id": 530814,
+      "username": "Juan Antonio Zegarra Condori pa",
+      "country": "us",
+      "game_name": "Winning Eleven 4",
+      "game_crc": "FC2E54D7",
+      "core_name": "Beetle PSX",
+      "core_version": "0.9.44.1 d5e2d68",
+      "subsystem_name": "N/A",
+      "retroarch_version": "1.22.2",
+      "frontend": "win32 x64",
+      "ip": "38.25.8.60",
+      "port": 55435,
+      "mitm_ip": "us-east1.relay.retroarch.com",
+      "mitm_port": 55435,
+      "mitm_session": "Qm0j0LVanJVbNJK+",
+      "host_method": 3,
+      "has_password": false,
+      "has_spectate_password": false,
+      "connectable": true,
+      "is_retroarch": true,
+      "player_count": 1,
+      "spectator_count": 0,
+      "created": "2026-03-16T21:15:07.554722962Z",
+      "updated": "2026-03-16T21:16:41.910775778Z"
+    }

@@ -30,36 +30,89 @@ function jugar(carpeta, archivo) {
 
 // Multiplayer: Create room and start game
 function jugarMultijugador(roomCode, carpeta, archivo) {
+  const romPath = carpeta + '/' + archivo;
+  console.log('Iniciando juego multijugador como host con código:', roomCode);
+  // Asumimos puerto por defecto o algo; puedes ajustar
+  return startNetplay({ mode: 'host', ip: null, port: 55435, romPath, mitmServer: null });
+}
+
+
+async function obtenerSalas() {
+  const res = await fetch('http://lobby.libretro.com/list/')
+  const data = await res.json()
+  return data
+}
+
+
+// Multiplayer: Join room
+async function conectarSala(codigo, carpeta, archivo) {
+  const salas = await obtenerSalas()
   const base = __dirname
-  const core = path.join(base, 'RetroArch-Win64', 'cores', 'mednafen_psx_libretro.dll')
   const game = path.join(base, 'games', carpeta, archivo)
+  const core = path.join(base, 'RetroArch-Win64', 'cores', 'mednafen_psx_libretro.dll')
   const config = path.join(base, 'RetroArch-Win64', 'retroarch.cfg')
   const retroarch = path.join(base, 'RetroArch-Win64', 'retroarch.exe')
+  const retroarchDir = path.join(base, 'RetroArch-Win64')
 
-  console.log('Iniciando juego multijugador con código:', roomCode)
-  console.log('game:', game)
-  console.log('existe:', fs.existsSync(game))
+
+  //logica de id + nroSalaNuestra(servidorpropio) + id
+  //pasar la contraseña autocreada en el servidor del host
+
+
+  // Buscar sala por ID exacto
+  const sala = salas.find(s => s.fields.id === parseInt(codigo))
+
+  if (!sala) {
+    console.log('Sala no encontrada:', codigo)
+    return
+  }
+
+  const { ip, port, mitm_ip, mitm_port, mitm_session } = sala.fields
+
+  console.log('Conectando a sala:', sala.fields.username, sala.fields.game_name)
 
   const proc = spawn(retroarch, [
     '-L', core,
     '--config', config,
+    '--connect', mitm_ip,
+    '--port', String(mitm_port),
+    '--mitm-session', mitm_session,
     '--fullscreen',
     game
-  ], { 
-    detached: true, 
-    stdio: 'ignore',
-    cwd: path.join(base, 'RetroArch-Win64')
-  })
+  ], { detached: false, stdio: 'inherit', cwd: retroarchDir })
 
-  proc.on('error', (err) => console.error('Error spawn:', err))
-  proc.on('close', (code) => console.log('RetroArch cerró con código:', code))
   proc.unref()
 }
 
-// Multiplayer: Join room
-function conectarSala(roomCode) {
-  console.log('Conectando a sala:', roomCode)
-  // TODO: Implementar lógica de conexión a sala
+// Función para iniciar netplay (movida desde main.js)
+function startNetplay({ mode, ip, port, romPath, mitmServer }) {
+  const base = __dirname
+  const retroarchPath = path.join(base, 'RetroArch-Win64', 'retroarch.exe');
+  const corePath = path.join(base, 'RetroArch-Win64', 'cores', 'mednafen_psx_libretro.dll');
+  const configPath = path.join(base, 'RetroArch-Win64', 'retroarch.cfg');
+  const fullRomPath = path.join(base, 'games', romPath);
+
+  let args = ['-L', corePath, '--config', configPath, '--fullscreen', fullRomPath];
+
+  if (mode === 'host') {
+    args.push('--host');
+    if (mitmServer) {
+      args.push('--netplay-mitm-server', mitmServer);
+    } else {
+      args.push('--port', port);
+    }
+  } else if (mode === 'client') {
+    args.push('--connect', ip, '--port', port);
+    if (mitmServer) {
+      args.push('--netplay-mitm-server', mitmServer);
+    }
+  }
+
+  const retroarch = spawn(retroarchPath, args, { stdio: 'inherit' });
+  retroarch.on('close', (code) => console.log(`RetroArch cerró con código ${code}`));
+  retroarch.on('error', (err) => console.error('Error al ejecutar RetroArch:', err));
+
+  return { success: true };
 }
 
-module.exports = { jugar, jugarMultijugador, conectarSala }
+module.exports = { jugar, jugarMultijugador, conectarSala, startNetplay }
