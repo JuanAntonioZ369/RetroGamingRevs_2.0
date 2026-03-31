@@ -96,11 +96,6 @@ function startNetplay({ mode, ip, port, romPath, mitmServer }) {
 
   if (mode === 'host') {
     args.push('--host');
-    if (mitmServer) {
-      args.push('--netplay-mitm-server', mitmServer);
-    } else {
-      args.push('--port', port);
-    }
   } else if (mode === 'client') {
     args.push('--connect', ip, '--port', port);
     if (mitmServer) {
