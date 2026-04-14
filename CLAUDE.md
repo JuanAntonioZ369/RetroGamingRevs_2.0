@@ -41,9 +41,31 @@ Spawns RetroArch as a detached child process. `jugar()` for solo, `startNetplay(
 
 ## Key Configuration
 
-- **retroarch.cfg** — Main RetroArch config. `cfgigual.txt` is a committed baseline; `run.bat` overwrites `retroarch.cfg` with it on startup if they differ.
+- **retroarch.cfg** — Main RetroArch config. `cfgigual.txt` is a committed baseline; `run.bat` overwrites `retroarch.cfg` with it on startup if they differ. **Always edit `cfgigual.txt` first**, then `retroarch.cfg` — otherwise `run.bat` will revert changes.
 - **PSX BIOS** — Must be placed in `RetroArch-Win64/system/`. Expected filenames: `scph5500.bin`, `scph5501.bin`, `scph5502.bin`, `scph1001.bin`, `scph7001.bin`.
 - **Games** — Each game must be its own folder under `games/` containing a `.cue` file. Only `.cue`-based games are detected.
+
+## Netplay Infrastructure
+
+The app uses a **custom MITM relay server** in Lima, Peru (`38.250.116.33:55435`) configured via:
+```
+netplay_mitm_server = "custom"
+netplay_custom_mitm_server = "38.250.116.33"
+netplay_use_mitm_server = "true"
+```
+
+The server runs `netplay-mitm-server` (C++/Qt binary at `/root/netplay-mitm-server/mitm`) as a systemd service (`netplay-mitm-server.service`). To manage it:
+```bash
+ssh root@38.250.116.33
+systemctl status netplay-mitm-server   # ver estado
+systemctl restart netplay-mitm-server  # reiniciar
+journalctl -u netplay-mitm-server -f   # ver logs en vivo
+```
+
+**Key netplay settings tuned for the Lima server** (in both `cfgigual.txt` and `retroarch.cfg`):
+- `netplay_check_frames = 8` — sync cada ~133ms (antes era 59, casi 1 segundo de lag)
+- `netplay_input_latency_frames_min = 2` — latencia intencional mínima de input
+- `video_frame_delay_auto = true` — RetroArch ajusta el delay automáticamente
 
 ## External APIs
 

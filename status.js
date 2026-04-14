@@ -254,12 +254,15 @@ async function obtenerSalas() {
 async function getID() {
   const nick = getNickName()
   const emulador = await getEstadoEmulador()
+
+  if (!emulador.activo) return 'XXXXXX'
+
   const salas = await obtenerSalas()
 
   const miSala = salas.find(s =>
     s.fields.username === nick &&
-    s.fields.game_name === emulador.juego &&
-    s.fields.game_crc.toLowerCase() === emulador.crc32
+    (s.fields.game_name.includes(emulador.juego) || emulador.juego.includes(s.fields.game_name)) &&
+    s.fields.game_crc.toLowerCase() === emulador.crc32.toLowerCase()
   )
 
   return miSala ? miSala.fields.id : 'XXXXXX'
@@ -301,6 +304,5 @@ module.exports = {
   getCPU,
   getRAM,
   getLatencia,
-
   getID
-} 
+}

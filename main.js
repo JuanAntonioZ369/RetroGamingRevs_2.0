@@ -3,6 +3,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 const fs = require('fs');
 const { getNickName } = require('./status');
+const { startNetplay } = require('./gameOnly');
 
 let mainWindow;
 

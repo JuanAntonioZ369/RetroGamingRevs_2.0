@@ -272,13 +272,6 @@
   <!-- =================== END MAIN =================== -->
 
 
-  <!-- ===================== FOOTER ===================== -->
-  <footer class="h-8 bg-primary/5 border-t border-primary/10 flex items-center justify-between px-6 text-[10px] uppercase font-bold tracking-widest text-primary/60">
-    <div class="flex items-center gap-4">
-    </div>
-  </footer>
-  <!-- =================== END FOOTER =================== -->
-
   <script>
     const { jugarMultijugador, conectarSala } = require('../gameOnly');
     const { getNickName, getID } = require('../status')
@@ -301,12 +294,17 @@
     // Wrapper functions for multiplayer game start
     function iniciarJuegoMultijugador(mode, roomCode) {
       jugarMultijugador(roomCode, carpeta, archivo)
-      
+
       document.getElementById('generatedCode').textContent = 'XXXXXX'
       document.getElementById('loadingBar').classList.remove('hidden')
 
       const interval = setInterval(async () => {
-        const code = await getID()
+        let code
+        try {
+          code = await getID()
+        } catch (err) {
+          code = 'XXXXXX'
+        }
         if (code !== 'XXXXXX') {
           clearInterval(interval)
           document.getElementById('loadingBar').classList.add('hidden')
@@ -338,7 +336,12 @@
     }
 
     async function showCreate() {
-      const code = await getID()
+      let code
+      try {
+        code = await getID()
+      } catch (err) {
+        code = 'XXXXXX'
+      }
       document.getElementById('generatedCode').textContent = code;
       showView('createView');
       document.body.classList.add('bg-slate-800','dark:bg-slate-900');
