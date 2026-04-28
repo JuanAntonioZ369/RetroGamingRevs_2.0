@@ -1,6 +1,7 @@
 const { spawn } = require('child_process')
 const path = require('path')
 const fs = require('fs')
+const { getOfflineArgs, getOnlineArgs } = require('./configManager')
 
 function jugar(carpeta, archivo) {
   const base = __dirname
@@ -15,6 +16,7 @@ function jugar(carpeta, archivo) {
   const proc = spawn(retroarch, [
     '-L', core,
     '--config', config,
+    ...getOfflineArgs(),
     '--fullscreen',
     game
   ], {
@@ -73,6 +75,7 @@ async function conectarSala(codigo, carpeta, archivo) {
   const args = [
     '-L', core,
     '--config', config,
+    ...getOnlineArgs(),
     '--connect', mitm_ip,
     '--port', String(mitm_port),
     '--mitm-session', mitm_session,
@@ -94,7 +97,7 @@ function startNetplay({ mode, ip, port, romPath, mitmServer }) {
   const configPath = path.join(base, 'RetroArch-Win64', 'retroarch.cfg');
   const fullRomPath = path.join(base, 'games', romPath);
 
-  let args = ['-L', corePath, '--config', configPath, '--fullscreen', fullRomPath];
+  let args = ['-L', corePath, '--config', configPath, ...getOnlineArgs(), '--fullscreen', fullRomPath];
 
   if (mode === 'host') {
     args.push('--host');

@@ -63,9 +63,12 @@ journalctl -u netplay-mitm-server -f   # ver logs en vivo
 ```
 
 **Key netplay settings tuned for the Lima server** (in both `cfgigual.txt` and `retroarch.cfg`):
-- `netplay_check_frames = 8` — sync cada ~133ms (antes era 59, casi 1 segundo de lag)
-- `netplay_input_latency_frames_min = 2` — latencia intencional mínima de input
+- `netplay_check_frames = 60` — sync cada frame, máxima precisión
+- `netplay_input_latency_frames_min = 0` / `netplay_input_latency_frames_range = 2` — latencia artificial mínima
+- `netplay_nat_traversal = true` — fallback de NAT traversal activado
+- `netplay_max_ping = 175` — rechaza conexiones con más de 175ms de ping
 - `video_frame_delay_auto = true` — RetroArch ajusta el delay automáticamente
+- `run_ahead_enabled = false` — NO activar run-ahead con netplay; solo sirve para single player
 
 ## External APIs
 
