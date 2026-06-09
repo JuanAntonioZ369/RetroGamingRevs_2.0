@@ -5,10 +5,10 @@ const { getOfflineArgs, getOnlineArgs } = require('./configManager')
 
 function jugar(carpeta, archivo) {
   const base = __dirname
-  const core = path.join(base, 'RetroArch-Win64', 'cores', 'mednafen_psx_libretro.dll')
+  const core = path.join(base, 'Emuladores','RetroArch-Win64', 'cores', 'mednafen_psx_libretro.dll')
   const game = path.join(base, 'games', carpeta, archivo)
-  const config = path.join(base, 'RetroArch-Win64', 'retroarch.cfg')
-  const retroarch = path.join(base, 'RetroArch-Win64', 'retroarch.exe')
+  const config = path.join(base, 'Emuladores','RetroArch-Win64', 'retroarch.cfg')
+  const retroarch = path.join(base, 'Emuladores','RetroArch-Win64', 'retroarch.exe')
 
   console.log('game:', game)
   console.log('existe:', fs.existsSync(game))
@@ -22,7 +22,7 @@ function jugar(carpeta, archivo) {
   ], {
     detached: true,
     stdio: 'ignore',
-    cwd: path.join(base, 'RetroArch-Win64')
+    cwd: path.join(base, 'Emuladores','RetroArch-Win64')
   })
 
   proc.on('error', (err) => console.error('Error spawn:', err))
@@ -32,7 +32,7 @@ function jugar(carpeta, archivo) {
 // Multiplayer: Create room and start game
 function jugarMultijugador(roomCode, carpeta, archivo) {
   const romPath = carpeta + '/' + archivo;
-  return startNetplay({ mode: 'host', ip: null, port: 55435, romPath, mitmServer: '38.250.116.33' });
+  return startNetplay({ mode: 'host', ip: null, port: 55435, romPath, mitmServer: 'saopaulo' });
 }
 
 async function obtenerSalas() {
@@ -53,10 +53,10 @@ async function conectarSala(codigo, carpeta, archivo) {
 
   const base = __dirname
   const game = path.join(base, 'games', carpeta, archivo)
-  const core = path.join(base, 'RetroArch-Win64', 'cores', 'mednafen_psx_libretro.dll')
-  const config = path.join(base, 'RetroArch-Win64', 'retroarch.cfg')
-  const retroarch = path.join(base, 'RetroArch-Win64', 'retroarch.exe')
-  const retroarchDir = path.join(base, 'RetroArch-Win64')
+  const core = path.join(base, 'Emuladores','RetroArch-Win64', 'cores', 'mednafen_psx_libretro.dll')
+  const config = path.join(base, 'Emuladores','RetroArch-Win64', 'retroarch.cfg')
+  const retroarch = path.join(base, 'Emuladores','RetroArch-Win64', 'retroarch.exe')
+  const retroarchDir = path.join(base, 'Emuladores','RetroArch-Win64')
 
   const sala = salas.find(s => s.fields.id === parseInt(codigo))
 
@@ -92,9 +92,9 @@ async function conectarSala(codigo, carpeta, archivo) {
 // Función para iniciar netplay
 function startNetplay({ mode, ip, port, romPath, mitmServer }) {
   const base = __dirname
-  const retroarchPath = path.join(base, 'RetroArch-Win64', 'retroarch.exe');
-  const corePath = path.join(base, 'RetroArch-Win64', 'cores', 'mednafen_psx_libretro.dll');
-  const configPath = path.join(base, 'RetroArch-Win64', 'retroarch.cfg');
+  const retroarchPath = path.join(base, 'Emuladores','RetroArch-Win64', 'retroarch.exe');
+  const corePath = path.join(base, 'Emuladores','RetroArch-Win64', 'cores', 'mednafen_psx_libretro.dll');
+  const configPath = path.join(base, 'Emuladores','RetroArch-Win64', 'retroarch.cfg');
   const fullRomPath = path.join(base, 'games', romPath);
 
   let args = ['-L', corePath, '--config', configPath, ...getOnlineArgs(), '--fullscreen', fullRomPath];

@@ -5,7 +5,7 @@ const fs = require('fs')
 const path = require('path')
 
 const RETROARCH_PORT = 55355
-const CONFIG_PATH = path.join(__dirname, 'RetroArch-Win64', 'retroarch.cfg')
+const CONFIG_PATH = path.join(__dirname, 'Emuladores', 'RetroArch-Win64', 'retroarch.cfg')
 
 // ─── UTILIDAD: enviar comando UDP a RetroArch y esperar respuesta ───
 function enviarComando(comando) {
@@ -120,7 +120,7 @@ async function getJuegoActivo() {
 
 // ─── 5. BIOS detectada ───
 function getBIOS() {
-  const systemDir = path.join(__dirname, 'RetroArch-Win64', 'system')
+  const systemDir = path.join(__dirname, 'Emuladores', 'RetroArch-Win64', 'system')
   const biosConocidas = [
     'scph5500.bin', 'scph5501.bin', 'scph5502.bin',
     'scph1001.bin', 'scph7001.bin'

@@ -11,21 +11,21 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    icon: path.join(__dirname, 'logoPrimary.png'),
+    icon: path.join(__dirname, 'pngLogos/logoPrimary.png'),
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
     }
   });
 
-  mainWindow.loadFile('Guia/mainLobby.html');
+  mainWindow.loadFile('html/mainLobby.html');
 }
 
 // ─── Detectar en qué página estamos ───
 function getPageName(url) {
-  if (url.includes('mainLobby')) return 'mainLobby';
-  if (url.includes('gameModeSelection')) return 'gameModeSelection';
-  if (url.includes('MultiplayerLobby')) return 'MultiplayerLobby';
+  if (url.includes('html/mainLobby')) return 'mainLobby';
+  if (url.includes('html/gameModeSelection')) return 'gameModeSelection';
+  if (url.includes('html/MultiplayerLobby')) return 'MultiplayerLobby';
   return null;
 }
 

@@ -39,6 +39,11 @@ Communicates with a running RetroArch instance via UDP on port **55355** (RetroA
 ### `gameOnly.js`
 Spawns RetroArch as a detached child process. `jugar()` for solo, `startNetplay()` for host/client netplay (called by `jugarMultijugador` and `conectarSala`). Client connections use `--connect`, `--port`, `--mitm-session` flags obtained from the libretro lobby API.
 
+### `configManager.js`
+Returns `--appendconfig` args for the correct mode. RetroArch loads `retroarch.cfg` first, then the appendconfig overrides only those keys. Two configs live in `RetroArch-Win64/config/`:
+- `offline.cfg` — relaxed audio/video settings for solo play (larger buffer, no frame delay)
+- `online.cfg` — low-latency audio, hard sync, and netplay tuning for the Lima MITM server
+
 ## Key Configuration
 
 - **retroarch.cfg** — Main RetroArch config. `cfgigual.txt` is a committed baseline; `run.bat` overwrites `retroarch.cfg` with it on startup if they differ. **Always edit `cfgigual.txt` first**, then `retroarch.cfg` — otherwise `run.bat` will revert changes.

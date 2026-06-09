@@ -1,16 +1,28 @@
 
-1. ajustar el status para obtener room list al iniciar online (que me bote los datos al dar join)
 
-1.5. Logo
+5. conectar supabase con la app, para tener lo s ususarios y si tienen cuenta de steam, que se conecten con eso, asi se crea automaticamente la cuenta a supabase.
+    pero si no, que lo cree en supabase xd. guardar partidas en la cuenta de cada que se cree en supabase(por usuario tenga una cantidad minima de almacenamietno)
 
-2. servidor local prueba para pasar datos imoportantes:
-    room, bios, core, contraseña, nickname, 
-    y alguna configuracion
 
-3. dejar los botones conectadfos con el backend (gameOnly, status y main)
 
-4. borrar los loops
+7. mejorar el aspecto de la app para soportar 2000 juegos, de diferentes consolas
 
-5. agregar usuarios con supa
+8. que funcione con mando la app
 
+
+10. que funcione con todos los juegos
+
+12. tener un exe para hacer pruebas con otras personas
+
+13. entrar a un juego, tiene que reconocer cual core y emulador utilizar para el juego
+
+14. seguridad total en todo lo delicado en servidor y la app
+
+15. Separar los juegos por consola y si son juegos para 1 o mayor (para encontrar mas rapido juegos y diferencias si pueden ser multijugador o no) 
+
+6. tener los servidores en mi servidor, y tenerlos para nosotros servidor de respaldo, siesque se necesita
+
+juegos ps1 = mednafen
+
+los demas = retroarch
 

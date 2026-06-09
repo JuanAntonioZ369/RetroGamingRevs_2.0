@@ -55,5 +55,4 @@ SOLUCION ALTERNATIVA TEMPORAL
   (comentar la linea netplay_custom_mitm_server)
 
 
-https://www.one-tab.com/page/_8sFfWGdQVuIkA4cZVdM1Q
 https://footystats.org/api
