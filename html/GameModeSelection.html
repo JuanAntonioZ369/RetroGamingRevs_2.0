@@ -176,8 +176,10 @@
       document.querySelector('h1').textContent = gameTitle.toUpperCase();
     }
 
-    // Dividir gameParam en carpeta y archivo
-    const [carpeta, archivo] = gameParam.split('/');
+    // Dividir gameParam en carpeta y archivo (soporta rutas con subcarpetas)
+    const lastSlash = gameParam.lastIndexOf('/');
+    const carpeta = gameParam.substring(0, lastSlash);
+    const archivo = gameParam.substring(lastSlash + 1);
   </script>
 
 </body>

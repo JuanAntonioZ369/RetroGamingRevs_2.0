@@ -141,10 +141,13 @@
 
         <!-- Section Title & View Toggle -->
         <div class="flex items-center justify-between mb-8">
-          <div>
-            <h2 class="text-2xl font-bold dark:text-white">All Games</h2>
+          <div class="flex items-center gap-3">
+            <button id="back-folder-btn" onclick="backToFolders()" class="hidden p-2 rounded-xl text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors">
+              <span class="material-icons-round">arrow_back</span>
+            </button>
+            <h2 id="section-title" class="text-2xl font-bold dark:text-white">Library</h2>
           </div>
-          <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg">
+          <div id="view-toggle" class="hidden items-center gap-1 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg">
             <button id="list-btn" class="p-1.5 rounded-md bg-white dark:bg-slate-700 shadow-sm text-primary">
               <span class="material-icons-round">list</span>
             </button>
@@ -261,84 +264,141 @@
 
     document.getElementById('nickname').textContent = getNickName();
 
-    let games = [];
-    let currentView = 'list'; // 'grid' or 'list'
+    let allFolders = [];
+    let currentFolder = null;
+    let currentView = 'list';
 
-    // Receive games list
-    ipcRenderer.on('games-list', (event, gamesList) => {
-      games = gamesList;
-      renderGames(games, currentView);
+    ipcRenderer.on('folders-list', (event, folders) => {
+      allFolders = folders;
+      renderView();
     });
 
-    function renderGames(gamesToRender, view = 'grid') {
+    function renderView() {
+      const searchInput = document.getElementById('search-input');
+      const backBtn = document.getElementById('back-folder-btn');
+      const viewToggle = document.getElementById('view-toggle');
+      const title = document.getElementById('section-title');
+
+      if (currentFolder === null) {
+        title.textContent = 'Library';
+        backBtn.classList.add('hidden');
+        viewToggle.classList.add('hidden');
+        searchInput.value = '';
+        renderFolders(allFolders);
+      } else {
+        title.textContent = currentFolder.name;
+        backBtn.classList.remove('hidden');
+        viewToggle.classList.remove('hidden');
+        renderGames(currentFolder.games, currentView);
+      }
+    }
+
+    function renderFolders(folders) {
+      const container = document.getElementById('games-grid');
+      container.className = 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6';
+      container.innerHTML = '';
+
+      if (folders.length === 0) {
+        container.innerHTML = '<p class="col-span-full text-slate-400 text-center py-16">No hay carpetas en games/</p>';
+        return;
+      }
+
+      folders.forEach(folder => {
+        const card = document.createElement('div');
+        card.className = 'cursor-pointer group p-6 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-primary/10 dark:hover:bg-primary/10 transition-all border border-transparent hover:border-primary/30';
+        card.innerHTML = `
+          <div class="flex flex-col items-center gap-3 text-center">
+            <span class="material-icons-round text-5xl text-primary/50 group-hover:text-primary transition-colors">folder</span>
+            <div>
+              <h3 class="font-bold text-sm dark:text-white">${folder.name}</h3>
+              <p class="text-xs text-slate-400 mt-1">${folder.games.length} juego${folder.games.length !== 1 ? 's' : ''}</p>
+            </div>
+          </div>
+        `;
+        card.onclick = () => {
+          currentFolder = folder;
+          renderView();
+        };
+        container.appendChild(card);
+      });
+    }
+
+    function renderGames(gamesToRender, view = 'list') {
       const container = document.getElementById('games-grid');
       container.innerHTML = '';
 
-      gamesToRender.forEach(game => {
-        const card = document.createElement('div');
-        if (view === 'list') {
+      if (gamesToRender.length === 0) {
+        container.className = 'flex flex-col gap-4';
+        container.innerHTML = '<p class="text-slate-400 text-center py-16">Esta carpeta está vacía</p>';
+        return;
+      }
+
+      if (view === 'list') {
+        container.className = 'flex flex-col gap-4';
+        gamesToRender.forEach(game => {
+          const card = document.createElement('div');
           card.className = 'flex items-center gap-4 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg';
           card.innerHTML = `
-            <div class="flex-1">
-              <h3 class="font-bold text-sm dark:text-white">${game.title}</h3>
+            <img class="w-12 h-12 rounded-lg object-cover flex-shrink-0" src="../pngLogos/${game.title}.png" onerror="this.src='../pngLogos/logoFondo.png'" alt="${game.title}" />
+            <div class="flex-1 min-w-0">
+              <h3 class="font-bold text-sm dark:text-white truncate">${game.title}</h3>
             </div>
-            <button onclick="playGame('${game.romPath}', '${game.title}')" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90">Play</button>
+            <button onclick="playGame('${game.romPath}', '${game.title}')" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm font-medium">Play</button>
           `;
-        } else {
+          container.appendChild(card);
+        });
+      } else {
+        container.className = 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-8';
+        gamesToRender.forEach(game => {
+          const card = document.createElement('div');
           card.className = 'group game-card relative';
           card.innerHTML = `
             <div class="aspect-[4/5] rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-800 shadow-xl border border-white/10 relative">
-              <img class="w-full h-full object-cover" alt="${game.title}" src="${game.image || '../logoFondo.png'}" onerror="this.src='../logoFondo.png'" />
+              <img class="w-full h-full object-cover" alt="${game.title}" src="../pngLogos/${game.title}.png" onerror="this.src='../pngLogos/logoFondo.png'" />
               <div class="play-overlay absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/40 to-transparent opacity-0 flex flex-col items-center justify-center p-6 transition-all duration-300">
                 <button onclick="playGame('${game.romPath}', '${game.title}')" class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-primary shadow-2xl mb-4 hover:scale-110 transition-transform">
                   <span class="material-icons-round text-3xl">play_arrow</span>
                 </button>
-                <div class="text-center">
-                  <div class="text-white font-bold text-lg leading-tight mb-1">${game.title}</div>
-                </div>
+                <div class="text-white font-bold text-lg leading-tight">${game.title}</div>
               </div>
             </div>
-            <div class="mt-4">
-              <h3 class="font-bold text-sm truncate dark:text-white">${game.title}</h3>
-            </div>
+            <h3 class="mt-3 font-bold text-sm truncate dark:text-white">${game.title}</h3>
           `;
-        }
-        container.appendChild(card);
-      });
+          container.appendChild(card);
+        });
+      }
+    }
+
+    function backToFolders() {
+      currentFolder = null;
+      renderView();
     }
 
     function playGame(romPath, title) {
       window.location.href = 'gameModeSelection.html?game=' + encodeURIComponent(romPath) + '&title=' + encodeURIComponent(title);
     }
 
-    // Search functionality
-    const searchInput = document.getElementById('search-input');
-    searchInput.addEventListener('input', (e) => {
+    // Search — filtra juegos dentro de la carpeta actual
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      if (currentFolder === null) return;
       const query = e.target.value.toLowerCase();
-      const filtered = games.filter(game => game.title.toLowerCase().includes(query));
+      const filtered = currentFolder.games.filter(g => g.title.toLowerCase().includes(query));
       renderGames(filtered, currentView);
     });
 
     // View toggle
-    const gridBtn = document.getElementById('grid-btn');
-    const listBtn = document.getElementById('list-btn');
-
-    gridBtn.addEventListener('click', () => setView('grid'));
-    listBtn.addEventListener('click', () => setView('list'));
+    document.getElementById('grid-btn').addEventListener('click', () => setView('grid'));
+    document.getElementById('list-btn').addEventListener('click', () => setView('list'));
 
     function setView(view) {
       currentView = view;
-      const container = document.getElementById('games-grid');
-      if (view === 'list') {
-        container.className = 'flex flex-col gap-4'; // Simple list view
-      } else {
-        container.className = 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-8';
-      }
-      // Update button styles
-      gridBtn.className = view === 'grid' ? 'p-1.5 rounded-md bg-white dark:bg-slate-700 shadow-sm text-primary' : 'p-1.5 rounded-md text-slate-400 hover:text-primary transition-colors';
-      listBtn.className = view === 'list' ? 'p-1.5 rounded-md bg-white dark:bg-slate-700 shadow-sm text-primary' : 'p-1.5 rounded-md text-slate-400 hover:text-primary transition-colors';
-      // Re-render with new view
-      renderGames(games, currentView);
+      document.getElementById('grid-btn').className = view === 'grid'
+        ? 'p-1.5 rounded-md bg-white dark:bg-slate-700 shadow-sm text-primary'
+        : 'p-1.5 rounded-md text-slate-400 hover:text-primary transition-colors';
+      document.getElementById('list-btn').className = view === 'list'
+        ? 'p-1.5 rounded-md bg-white dark:bg-slate-700 shadow-sm text-primary'
+        : 'p-1.5 rounded-md text-slate-400 hover:text-primary transition-colors';
+      if (currentFolder) renderGames(currentFolder.games, currentView);
     }
   </script>
 

@@ -4,19 +4,14 @@
     pero si no, que lo cree en supabase xd. guardar partidas en la cuenta de cada que se cree en supabase(por usuario tenga una cantidad minima de almacenamietno)
 
 
-
-7. mejorar el aspecto de la app para soportar 2000 juegos, de diferentes consolas
-
-8. que funcione con mando la app
+8. que funcione con mando la app y poner tipo en la app "detector de butones en mando" etc.
 
 
 10. que funcione con todos los juegos
 
-12. tener un exe para hacer pruebas con otras personas
+12. tener un .exe para hacer pruebas con otras personas
 
-13. entrar a un juego, tiene que reconocer cual core y emulador utilizar para el juego
-
-14. seguridad total en todo lo delicado en servidor y la app
+//14. seguridad total en todo lo delicado en servidor y la app
 
 15. Separar los juegos por consola y si son juegos para 1 o mayor (para encontrar mas rapido juegos y diferencias si pueden ser multijugador o no) 
 
@@ -26,3 +21,4 @@ juegos ps1 = mednafen
 
 los demas = retroarch
 
+claude --resume e0b1cdad-535d-4437-a6a0-0880621ebf89

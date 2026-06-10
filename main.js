@@ -31,27 +31,41 @@ function getPageName(url) {
 
 function getGamesList() {
   const gamesDir = path.join(__dirname, 'games');
-  const games = [];
+  const folders = [];
   try {
-    const folders = fs.readdirSync(gamesDir, { withFileTypes: true })
-      .filter(dirent => dirent.isDirectory())
-      .map(dirent => dirent.name);
+    const topLevel = fs.readdirSync(gamesDir, { withFileTypes: true })
+      .filter(d => d.isDirectory())
+      .map(d => d.name);
 
-    folders.forEach(folder => {
-      const folderPath = path.join(gamesDir, folder);
-      const files = fs.readdirSync(folderPath);
-      const cueFile = files.find(file => file.endsWith('.cue'));
-      if (cueFile) {
-        games.push({
-          title: folder,
-          romPath: folder + '/' + cueFile
+    topLevel.forEach(folderName => {
+      const folderPath = path.join(gamesDir, folderName);
+      const contents = fs.readdirSync(folderPath, { withFileTypes: true });
+
+      // If folder directly contains a .cue, it's a single-game folder
+      const directCue = contents.find(f => f.isFile() && f.name.endsWith('.cue'));
+      if (directCue) {
+        folders.push({
+          name: folderName,
+          games: [{ title: folderName, romPath: folderName + '/' + directCue.name }]
         });
+      } else {
+        // Category folder — scan subfolders for games
+        const games = [];
+        contents.filter(d => d.isDirectory()).forEach(sub => {
+          const subPath = path.join(folderPath, sub.name);
+          const subFiles = fs.readdirSync(subPath);
+          const cue = subFiles.find(f => f.endsWith('.cue'));
+          if (cue) {
+            games.push({ title: sub.name, romPath: folderName + '/' + sub.name + '/' + cue });
+          }
+        });
+        folders.push({ name: folderName, games });
       }
     });
   } catch (err) {
     console.error('Error leyendo games:', err);
   }
-  return games;
+  return folders;
 }
 
 app.whenReady().then(() => {
@@ -63,8 +77,8 @@ app.whenReady().then(() => {
 
     // Enviar lista de juegos solo en mainLobby
     if (page === 'mainLobby') {
-      const games = getGamesList();
-      mainWindow.webContents.send('games-list', games);
+      const folders = getGamesList();
+      mainWindow.webContents.send('folders-list', folders);
     }
   });
 

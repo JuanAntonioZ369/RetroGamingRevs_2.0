@@ -6,13 +6,13 @@ Starting Mednafen 1.32.1
    Compiled against libiconv 15.1, running with libiconv 15.1
    Compiled against SDL 2.28.5(SDL-release-2.28.5-0-g15ead9a40 (mednafen-x86_64-000)), running with SDL 2.28.5(SDL-release-2.28.5-0-g15ead9a40 (mednafen-x86_64-000))
    Running with libFLAC 1.3.4
- Base directory: C:\Users\jazc2\Desktop\NewGameRev\Emuladores\mednafen-1.32.1-win64
+ Base directory: C:\Users\jazc2\.mednafen
  Emulation modules: apple2 nes snes gb gba pce lynx md pcfx ngp psx ss ssfplay vb wswan sms gg sasplay snes_faust pce_fast demo cdplay
  Opening lockfile...
- Loading settings from "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\mednafen-1.32.1-win64\mednafen.cfg"...
+ Loading settings from "C:\Users\jazc2\.mednafen\mednafen.cfg"...
   Loaded 7904 valid settings and 0 unknown settings.
  Initializing joysticks...
-  ID: 0x0cda054c000000000000504944564944 - Controller
+  ID: 0x05752563000000000000504944564944 - PS3/PC Gamepad
  Loading "C:\Users\jazc2\Desktop\NewGameRev\games\PS1\WinningEleven4\Winning Eleven 4.cue"...
   Loading SBI file "C:\Users\jazc2\Desktop\NewGameRev\games\PS1\WinningEleven4\Winning Eleven 4.sbi"...
    Error: Error opening file "C:\Users\jazc2\Desktop\NewGameRev\games\PS1\WinningEleven4\Winning Eleven 4.sbi" for reading: No such file or directory
@@ -36,10 +36,10 @@ Starting Mednafen 1.32.1
     Leadout: 187311  AUDIO
 
  Using module: psx(Sony PlayStation)
-  Loading override settings from "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\mednafen-1.32.1-win64\psx.cfg"...
-   Failed: Error opening file "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\mednafen-1.32.1-win64\psx.cfg" for reading: No such file or directory
-  Loading override settings from "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\mednafen-1.32.1-win64\pgconfig\Winning Eleven 4.psx.cfg"...
-   Failed: Error opening file "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\mednafen-1.32.1-win64\pgconfig\Winning Eleven 4.psx.cfg" for reading: No such file or directory
+  Loading override settings from "C:\Users\jazc2\.mednafen\psx.cfg"...
+   Failed: Error opening file "C:\Users\jazc2\.mednafen\psx.cfg" for reading: No such file or directory
+  Loading override settings from "C:\Users\jazc2\.mednafen\pgconfig\Winning Eleven 4.psx.cfg"...
+   Failed: Error opening file "C:\Users\jazc2\.mednafen\pgconfig\Winning Eleven 4.psx.cfg" for reading: No such file or directory
 
   Emulated Disc SCEx IDs:
    Disc 1: SCEI
@@ -49,8 +49,8 @@ Starting Mednafen 1.32.1
   Multitap on PSX Port 1: Disabled
   Multitap on PSX Port 2: Disabled
 
- Loading cheats from "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\mednafen-1.32.1-win64\cheats\psx.cht"...
-  Error opening file "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\mednafen-1.32.1-win64\cheats\psx.cht" for reading: No such file or directory
+ Loading cheats from "C:\Users\jazc2\.mednafen\cheats\psx.cht"...
+  Error opening file "C:\Users\jazc2\.mednafen\cheats\psx.cht" for reading: No such file or directory
 
  Initializing sound...
   Using "WASAPI(Shared mode)" audio driver with SexyAL's default device selection.
@@ -61,12 +61,12 @@ Starting Mednafen 1.32.1
    Latency: 1536 sample frames(32.000000 ms)
  Initializing video...
   Driver: OpenGL
-  Display Mode: 2560 x 1600 x 24 bpp @ 165Hz  (Window: 960 x 720)
+  Display Mode: 2560 x 1600 x 24 bpp @ 165Hz  (Window: 2560 x 1600)
   Shader: none
-  Fullscreen: No
+  Fullscreen: Yes
   Special Scaler: None
   Scanlines: Off
-  Destination Rectangle: X=0, Y=0, W=960, H=720
+  Destination Rectangle: X=320, Y=80, W=1920, H=1440
   OpenGL Implementation: NVIDIA Corporation NVIDIA GeForce RTX 3050 Ti Laptop GPU/PCIe/SSE2 4.6.0 NVIDIA 546.30
   Checking extensions:
    GL_ARB_texture_non_power_of_two found.
