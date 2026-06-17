@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+
+  <title>GamingRevs - Acceder</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#0d33f2",
+            "background-light": "#f5f6f8",
+            "background-dark": "#101322",
+          },
+          fontFamily: {
+            "display": ["Spline Sans", "sans-serif"],
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px",
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Spline Sans', sans-serif;
+      overflow: hidden;
+    }
+
+    .glass-card {
+      background: rgba(16, 19, 34, 0.65);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .bg-vignette {
+      background: radial-gradient(circle, rgba(16,19,34,0) 0%, rgba(16,19,34,0.95) 100%);
+    }
+
+    .input-field {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      color: #ffffff !important;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-field::placeholder {
+      color: rgba(255, 255, 255, 0.35) !important;
+    }
+    .input-field:focus {
+      outline: none;
+      border-color: #0d33f2;
+      box-shadow: 0 0 0 3px rgba(13, 51, 242, 0.2);
+    }
+
+    .tab-active {
+      background: #0d33f2;
+      color: #fff;
+    }
+    .tab-inactive {
+      background: transparent;
+      color: rgba(255, 255, 255, 0.45);
+    }
+    .tab-inactive:hover {
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    .btn-primary {
+      background: #0d33f2;
+      transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+    }
+    .btn-primary:hover:not(:disabled) {
+      background: #0b2cd4;
+      box-shadow: 0 0 24px rgba(13, 51, 242, 0.45);
+    }
+    .btn-primary:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .spinner-ring {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,0.25);
+      border-top-color: #fff;
+      border-radius: 9999px;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+
+    /* Decorative blobs */
+    .blob-1 {
+      position: fixed;
+      top: -120px;
+      left: -120px;
+      width: 480px;
+      height: 480px;
+      background: radial-gradient(circle, rgba(13, 51, 242, 0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .blob-2 {
+      position: fixed;
+      bottom: -100px;
+      right: -100px;
+      width: 420px;
+      height: 420px;
+      background: radial-gradient(circle, rgba(13, 51, 242, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body class="bg-background-dark font-display text-white min-h-screen flex items-center justify-center">
+
+  <!-- ===================== DECORATIVE BACKGROUND ===================== -->
+  <div class="fixed inset-0 z-0">
+    <!-- Faint grid texture -->
+    <div class="absolute inset-0 opacity-[0.03]"
+         style="background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px); background-size: 40px 40px;">
+    </div>
+    <!-- Radial vignette -->
+    <div class="absolute inset-0 bg-vignette"></div>
+    <!-- Gradient overlay top/bottom -->
+    <div class="absolute inset-0 bg-gradient-to-b from-background-dark/80 via-transparent to-background-dark/80"></div>
+  </div>
+
+  <!-- Decorative color blobs -->
+  <div class="blob-1 z-0"></div>
+  <div class="blob-2 z-0"></div>
+
+  <!-- Background logo watermark -->
+  <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.02] pointer-events-none z-0 select-none">
+    <img src="../pngLogos/logoFondo.png" alt="" class="w-[600px] h-[600px] object-contain" />
+  </div>
+  <!-- =================== END BACKGROUND =================== -->
+
+
+  <!-- ===================== LOGIN CARD ===================== -->
+  <div class="relative z-10 w-full max-w-md px-4">
+
+    <!-- Logo & Brand -->
+    <div class="flex flex-col items-center mb-8">
+      <div class="w-20 h-20 bg-primary rounded-2xl flex items-center justify-center shadow-[0_0_40px_rgba(13,51,242,0.5)] mb-5">
+        <img src="../pngLogos/logo.png" alt="GamingRevs Logo" class="w-full h-full object-cover rounded-2xl" />
+      </div>
+      <h1 class="text-3xl font-bold tracking-tight">
+        GAMING<span class="text-primary">REVS</span>
+      </h1>
+      <p class="text-white/40 text-sm mt-1 tracking-wide">Tu lanzador de PS1</p>
+    </div>
+
+    <!-- Glass card -->
+    <div class="glass-card rounded-2xl p-8 shadow-2xl">
+
+      <!-- Tab switcher -->
+      <div class="flex gap-1 p-1 rounded-xl mb-8" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07);">
+        <button
+          id="tab-login"
+          class="flex-1 py-2.5 rounded-lg text-sm font-semibold tracking-wide transition-all duration-200 tab-active"
+          onclick="switchTab('login')"
+        >
+          Iniciar sesión
+        </button>
+        <button
+          id="tab-register"
+          class="flex-1 py-2.5 rounded-lg text-sm font-semibold tracking-wide transition-all duration-200 tab-inactive"
+          onclick="switchTab('register')"
+        >
+          Registrarse
+        </button>
+      </div>
+
+      <!-- ── Tab: Login ── -->
+      <form id="form-login" onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-white/50 uppercase tracking-widest mb-2">Email</label>
+          <div class="relative">
+            <span class="material-icons-round absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-lg pointer-events-none">email</span>
+            <input
+              id="login-email"
+              type="email"
+              placeholder="tu@email.com"
+              autocomplete="email"
+              required
+              class="input-field w-full rounded-xl py-3 pl-10 pr-4 text-sm"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-white/50 uppercase tracking-widest mb-2">Contraseña</label>
+          <div class="relative">
+            <span class="material-icons-round absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-lg pointer-events-none">lock</span>
+            <input
+              id="login-password"
+              type="password"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              required
+              class="input-field w-full rounded-xl py-3 pl-10 pr-4 text-sm"
+            />
+          </div>
+        </div>
+
+        <!-- Error message -->
+        <p id="error-msg-login" class="hidden text-red-400 text-sm font-medium pt-1 flex items-center gap-2">
+          <span class="material-icons-round text-base">error_outline</span>
+          <span id="error-text-login"></span>
+        </p>
+
+        <button
+          id="btn-login"
+          type="submit"
+          class="btn-primary w-full py-3.5 rounded-xl font-bold text-sm tracking-widest uppercase flex items-center justify-center gap-3 mt-2"
+        >
+          <span id="btn-login-label">Entrar</span>
+          <span id="spinner-login" class="hidden">
+            <span class="spinner-ring"></span>
+          </span>
+        </button>
+      </form>
+
+      <!-- ── Tab: Register ── -->
+      <form id="form-register" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+        <div>
+          <label class="block text-xs font-semibold text-white/50 uppercase tracking-widest mb-2">Nombre de usuario</label>
+          <div class="relative">
+            <span class="material-icons-round absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-lg pointer-events-none">person</span>
+            <input
+              id="reg-username"
+              type="text"
+              placeholder="Tu nombre de jugador"
+              autocomplete="username"
+              required
+              minlength="3"
+              class="input-field w-full rounded-xl py-3 pl-10 pr-4 text-sm"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-white/50 uppercase tracking-widest mb-2">Email</label>
+          <div class="relative">
+            <span class="material-icons-round absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-lg pointer-events-none">email</span>
+            <input
+              id="reg-email"
+              type="email"
+              placeholder="tu@email.com"
+              autocomplete="email"
+              required
+              class="input-field w-full rounded-xl py-3 pl-10 pr-4 text-sm"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-white/50 uppercase tracking-widest mb-2">Contraseña</label>
+          <div class="relative">
+            <span class="material-icons-round absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-lg pointer-events-none">lock</span>
+            <input
+              id="reg-password"
+              type="password"
+              placeholder="••••••••"
+              autocomplete="new-password"
+              required
+              minlength="6"
+              class="input-field w-full rounded-xl py-3 pl-10 pr-4 text-sm"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-white/50 uppercase tracking-widest mb-2">Confirmar contraseña</label>
+          <div class="relative">
+            <span class="material-icons-round absolute left-3 top-1/2 -translate-y-1/2 text-white/30 text-lg pointer-events-none">lock_reset</span>
+            <input
+              id="reg-confirm"
+              type="password"
+              placeholder="••••••••"
+              autocomplete="new-password"
+              required
+              class="input-field w-full rounded-xl py-3 pl-10 pr-4 text-sm"
+            />
+          </div>
+        </div>
+
+        <!-- Error message -->
+        <p id="error-msg-register" class="hidden text-red-400 text-sm font-medium pt-1 flex items-center gap-2">
+          <span class="material-icons-round text-base">error_outline</span>
+          <span id="error-text-register"></span>
+        </p>
+
+        <button
+          id="btn-register"
+          type="submit"
+          class="btn-primary w-full py-3.5 rounded-xl font-bold text-sm tracking-widest uppercase flex items-center justify-center gap-3 mt-2"
+        >
+          <span id="btn-register-label">Crear cuenta</span>
+          <span id="spinner-register" class="hidden">
+            <span class="spinner-ring"></span>
+          </span>
+        </button>
+      </form>
+
+    </div>
+
+    <!-- Version footnote -->
+    <p class="text-center text-white/20 text-xs mt-6 tracking-widest">GAMINREVS &copy; 2025</p>
+  </div>
+  <!-- =================== END LOGIN CARD =================== -->
+
+
+  <!-- Screen vignette edge -->
+  <div class="fixed inset-0 pointer-events-none border-[20px] border-background-dark/30 z-20"></div>
+
+
+  <script>
+    const { loginUser, registerUser, getSession } = require('../supabaseAuth');
+
+    // ── Auto-login si ya hay sesión guardada ──────────────────────────
+    ;(async () => {
+      try {
+        const session = await getSession();
+        if (session) window.location.href = 'mainLobby.html';
+      } catch(e) {}
+    })();
+
+    // ── Tab switching ────────────────────────────────────────────────
+    function switchTab(tab) {
+      const isLogin = tab === 'login';
+
+      document.getElementById('tab-login').className =
+        'flex-1 py-2.5 rounded-lg text-sm font-semibold tracking-wide transition-all duration-200 ' +
+        (isLogin ? 'tab-active' : 'tab-inactive');
+
+      document.getElementById('tab-register').className =
+        'flex-1 py-2.5 rounded-lg text-sm font-semibold tracking-wide transition-all duration-200 ' +
+        (!isLogin ? 'tab-active' : 'tab-inactive');
+
+      document.getElementById('form-login').classList.toggle('hidden', !isLogin);
+      document.getElementById('form-register').classList.toggle('hidden', isLogin);
+
+      // Clear errors on tab switch
+      hideError('login');
+      hideError('register');
+    }
+
+    // ── Error helpers ────────────────────────────────────────────────
+    function showError(tab, msg) {
+      const el = document.getElementById('error-msg-' + tab);
+      document.getElementById('error-text-' + tab).textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    function hideError(tab) {
+      document.getElementById('error-msg-' + tab).classList.add('hidden');
+    }
+
+    // ── Loading state helpers ────────────────────────────────────────
+    function setLoading(tab, loading) {
+      const btn    = document.getElementById('btn-' + tab);
+      const label  = document.getElementById('btn-' + tab + '-label');
+      const spinner = document.getElementById('spinner-' + tab);
+
+      btn.disabled = loading;
+      label.classList.toggle('hidden', loading);
+      spinner.classList.toggle('hidden', !loading);
+    }
+
+    // ── Login form handler ───────────────────────────────────────────
+    async function handleLogin(event) {
+      event.preventDefault();
+      hideError('login');
+
+      const email    = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      setLoading('login', true);
+      try {
+        await loginUser(email, password);
+        window.location.href = 'mainLobby.html';
+      } catch (err) {
+        showError('login', err.message || 'No se pudo iniciar sesión. Verifica tus credenciales.');
+      } finally {
+        setLoading('login', false);
+      }
+    }
+
+    // ── Register form handler ────────────────────────────────────────
+    async function handleRegister(event) {
+      event.preventDefault();
+      hideError('register');
+
+      const username = document.getElementById('reg-username').value.trim();
+      const email    = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+      const confirm  = document.getElementById('reg-confirm').value;
+
+      if (password !== confirm) {
+        showError('register', 'Las contraseñas no coinciden.');
+        return;
+      }
+      if (password.length < 6) {
+        showError('register', 'La contraseña debe tener al menos 6 caracteres.');
+        return;
+      }
+
+      setLoading('register', true);
+      try {
+        const data = await registerUser(username, email, password);
+        // Si Supabase requiere confirmación de email, el usuario no tiene sesión todavía
+        if (data?.user && !data?.session) {
+          // Mostrar mensaje de confirmación en vez de redirigir
+          showError('register', '✉️ Revisa tu email y confirma tu cuenta. Luego vuelve a iniciar sesión.');
+        } else {
+          window.location.href = 'mainLobby.html';
+        }
+      } catch (err) {
+        showError('register', err.message || 'No se pudo crear la cuenta. Inténtalo de nuevo.');
+      } finally {
+        setLoading('register', false);
+      }
+    }
+  </script>
+
+</body>
+</html>

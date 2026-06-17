@@ -1,0 +1,124 @@
+{
+  "version": "1.5",
+  "default_core_path": "",
+  "default_core_name": "",
+  "label_display_mode": 0,
+  "right_thumbnail_mode": 0,
+  "left_thumbnail_mode": 0,
+  "thumbnail_match_mode": 0,
+  "sort_mode": 2,
+  "items": [
+    {
+      "path": "C:\\Users\\jazc2\\Desktop\\games\\Silent Hill\\Silent Hill.cue",
+      "label": "",
+      "core_path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\Emuladores\\RetroArch-Win64\\cores\\mednafen_psx_libretro.dll",
+      "core_name": "Sony - PlayStation (Beetle PSX)",
+      "crc32": "",
+      "db_name": ""
+    },
+    {
+      "path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\games\\Fighting Force\\Fighting Force (v1.1).cue",
+      "label": "",
+      "core_path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\Emuladores\\RetroArch-Win64\\cores\\mednafen_psx_libretro.dll",
+      "core_name": "Sony - PlayStation (Beetle PSX)",
+      "crc32": "",
+      "db_name": ""
+    },
+    {
+      "path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\games\\PS1\\WinningEleven4\\Winning Eleven 4.cue",
+      "label": "",
+      "core_path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\Emuladores\\RetroArch-Win64\\cores\\mednafen_psx_libretro.dll",
+      "core_name": "Sony - PlayStation (Beetle PSX)",
+      "crc32": "",
+      "db_name": ""
+    },
+    {
+      "path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\games\\PS1\\Tekken 3\\Tekken 3.cue",
+      "label": "",
+      "core_path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\Emuladores\\RetroArch-Win64\\cores\\swanstation_libretro.dll",
+      "core_name": "Sony - PlayStation (SwanStation)",
+      "crc32": "",
+      "db_name": ""
+    },
+    {
+      "path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\games\\PS1\\WinningEleven4\\Winning Eleven 4.cue",
+      "label": "",
+      "core_path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\Emuladores\\RetroArch-Win64\\cores\\swanstation_libretro.dll",
+      "core_name": "Sony - PlayStation (SwanStation)",
+      "crc32": "",
+      "db_name": ""
+    },
+    {
+      "path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\games\\WinningEleven4\\Winning Eleven 4.cue",
+      "label": "",
+      "core_path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\RetroArch-Win64\\cores\\mednafen_psx_libretro.dll",
+      "core_name": "Sony - PlayStation (Beetle PSX)",
+      "crc32": "",
+      "db_name": "Sony - PlayStation"
+    },
+    {
+      "path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\games\\Fighting Force\\Fighting Force (v1.1).cue",
+      "label": "",
+      "core_path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\RetroArch-Win64\\cores\\mednafen_psx_libretro.dll",
+      "core_name": "Sony - PlayStation (Beetle PSX)",
+      "crc32": "",
+      "db_name": ""
+    },
+    {
+      "path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\games\\Tekken 3\\Tekken 3.cue",
+      "label": "",
+      "core_path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\RetroArch-Win64\\cores\\mednafen_psx_libretro.dll",
+      "core_name": "Sony - PlayStation (Beetle PSX)",
+      "crc32": "",
+      "db_name": "Sony - PlayStation"
+    },
+    {
+      "path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\games\\WinningEleven4\\Winning Eleven 4.cue",
+      "label": "",
+      "core_path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\RetroArch-Win64\\cores\\swanstation_libretro.dll",
+      "core_name": "Sony - PlayStation (SwanStation)",
+      "crc32": "",
+      "db_name": ""
+    },
+    {
+      "path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\games\\Crash Bandicoot\\Crash Bandicoot.cue",
+      "label": "",
+      "core_path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\RetroArch-Win64\\cores\\mednafen_psx_libretro.dll",
+      "core_name": "Sony - PlayStation (Beetle PSX)",
+      "crc32": "",
+      "db_name": ""
+    },
+    {
+      "path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\games\\Metal Gear Solid\\Metal Gear Solid.cue",
+      "label": "",
+      "core_path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\RetroArch-Win64\\cores\\mednafen_psx_libretro.dll",
+      "core_name": "Sony - PlayStation (Beetle PSX)",
+      "crc32": "",
+      "db_name": ""
+    },
+    {
+      "path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\games\\WinningEleven4\\Winning Eleven 4.bin",
+      "label": "",
+      "core_path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\RetroArch-Win64\\cores\\pcsx_rearmed_libretro.dll",
+      "core_name": "Sony - PlayStation (PCSX ReARMed)",
+      "crc32": "",
+      "db_name": "Sony - PlayStation"
+    },
+    {
+      "path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\games\\Metal Gear Solid\\Metal Gear Solid.cue",
+      "label": "",
+      "core_path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\RetroArch-Win64\\cores\\pcsx_rearmed_libretro.dll",
+      "core_name": "Sony - PlayStation (PCSX ReARMed)",
+      "crc32": "",
+      "db_name": ""
+    },
+    {
+      "path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\games\\WinningEleven4\\Winning Eleven 4.cue",
+      "label": "",
+      "core_path": "C:\\Users\\jazc2\\Desktop\\NewGameRev\\RetroArch-Win64\\cores\\pcsx_rearmed_libretro.dll",
+      "core_name": "Sony - PlayStation (PCSX ReARMed)",
+      "crc32": "",
+      "db_name": ""
+    }
+  ]
+}

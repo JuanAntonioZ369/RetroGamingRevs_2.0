@@ -6,67 +6,55 @@ Starting Mednafen 1.32.1
    Compiled against libiconv 15.1, running with libiconv 15.1
    Compiled against SDL 2.28.5(SDL-release-2.28.5-0-g15ead9a40 (mednafen-x86_64-000)), running with SDL 2.28.5(SDL-release-2.28.5-0-g15ead9a40 (mednafen-x86_64-000))
    Running with libFLAC 1.3.4
- Base directory: C:\Users\jazc2\.mednafen
+ Base directory: C:\Users\jazc2\Desktop\NewGameRev\Emuladores\mednafen-1.32.1-win64
  Emulation modules: apple2 nes snes gb gba pce lynx md pcfx ngp psx ss ssfplay vb wswan sms gg sasplay snes_faust pce_fast demo cdplay
  Opening lockfile...
- Loading settings from "C:\Users\jazc2\.mednafen\mednafen.cfg"...
+ Loading settings from "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\mednafen-1.32.1-win64\mednafen.cfg"...
   Loaded 7904 valid settings and 0 unknown settings.
  Initializing joysticks...
-  ID: 0x05752563000000000000504944564944 - PS3/PC Gamepad
- Loading "C:\Users\jazc2\Desktop\NewGameRev\games\PS1\WinningEleven4\Winning Eleven 4.cue"...
-  Loading SBI file "C:\Users\jazc2\Desktop\NewGameRev\games\PS1\WinningEleven4\Winning Eleven 4.sbi"...
-   Error: Error opening file "C:\Users\jazc2\Desktop\NewGameRev\games\PS1\WinningEleven4\Winning Eleven 4.sbi" for reading: No such file or directory
+ Loading "C:\Users\jazc2\Desktop\games\Silent Hill\Silent Hill.cue"...
+  Loading SBI file "C:\Users\jazc2\Desktop\games\Silent Hill\Silent Hill.sbi"...
+   Error: Error opening file "C:\Users\jazc2\Desktop\games\Silent Hill\Silent Hill.sbi" for reading: No such file or directory
 
    CD 1 TOC:
     Disc Type: 0x20 (CD-XA)
     First Track:  1
-    Last Track:  12
+    Last Track:   1
     Track  1, MSF: 00:02:00, LBA:      0  DATA
-    Track  2, MSF: 23:39:06, LBA: 106281  AUDIO
-    Track  3, MSF: 24:18:67, LBA: 109267  AUDIO
-    Track  4, MSF: 25:55:04, LBA: 116479  AUDIO
-    Track  5, MSF: 26:20:57, LBA: 118407  AUDIO
-    Track  6, MSF: 28:03:21, LBA: 126096  AUDIO
-    Track  7, MSF: 29:40:44, LBA: 133394  AUDIO
-    Track  8, MSF: 31:28:31, LBA: 141481  AUDIO
-    Track  9, MSF: 33:24:71, LBA: 150221  AUDIO
-    Track 10, MSF: 35:17:42, LBA: 158667  AUDIO
-    Track 11, MSF: 37:41:66, LBA: 169491  AUDIO
-    Track 12, MSF: 37:48:09, LBA: 169959  AUDIO
-    Leadout: 187311  AUDIO
+    Leadout: 262115  DATA
 
  Using module: psx(Sony PlayStation)
-  Loading override settings from "C:\Users\jazc2\.mednafen\psx.cfg"...
-   Failed: Error opening file "C:\Users\jazc2\.mednafen\psx.cfg" for reading: No such file or directory
-  Loading override settings from "C:\Users\jazc2\.mednafen\pgconfig\Winning Eleven 4.psx.cfg"...
-   Failed: Error opening file "C:\Users\jazc2\.mednafen\pgconfig\Winning Eleven 4.psx.cfg" for reading: No such file or directory
+  Loading override settings from "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\mednafen-1.32.1-win64\psx.cfg"...
+   Failed: Error opening file "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\mednafen-1.32.1-win64\psx.cfg" for reading: No such file or directory
+  Loading override settings from "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\mednafen-1.32.1-win64\pgconfig\Silent Hill.psx.cfg"...
+   Failed: Error opening file "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\mednafen-1.32.1-win64\pgconfig\Silent Hill.psx.cfg" for reading: No such file or directory
 
   Emulated Disc SCEx IDs:
-   Disc 1: SCEI
+   Disc 1: SCEA
 
-  Region: Japan
+  Region: North America
 
   Multitap on PSX Port 1: Disabled
   Multitap on PSX Port 2: Disabled
 
- Loading cheats from "C:\Users\jazc2\.mednafen\cheats\psx.cht"...
-  Error opening file "C:\Users\jazc2\.mednafen\cheats\psx.cht" for reading: No such file or directory
+ Loading cheats from "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\mednafen-1.32.1-win64\cheats\psx.cht"...
+  Error opening file "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\mednafen-1.32.1-win64\cheats\psx.cht" for reading: No such file or directory
 
  Initializing sound...
   Using "WASAPI(Shared mode)" audio driver with SexyAL's default device selection.
    Format: 16 bits(signed, 2 bytes, little-endian)
    Rate: 48000
-   Channels: 2
+   Channels: 8
    Buffer size: 1536 sample frames(32.000000 ms)
    Latency: 1536 sample frames(32.000000 ms)
  Initializing video...
   Driver: OpenGL
-  Display Mode: 2560 x 1600 x 24 bpp @ 165Hz  (Window: 2560 x 1600)
+  Display Mode: 2560 x 1600 x 24 bpp @ 165Hz  (Window: 960 x 720)
   Shader: none
-  Fullscreen: Yes
+  Fullscreen: No
   Special Scaler: None
   Scanlines: Off
-  Destination Rectangle: X=320, Y=80, W=1920, H=1440
+  Destination Rectangle: X=0, Y=0, W=960, H=720
   OpenGL Implementation: NVIDIA Corporation NVIDIA GeForce RTX 3050 Ti Laptop GPU/PCIe/SSE2 4.6.0 NVIDIA 546.30
   Checking extensions:
    GL_ARB_texture_non_power_of_two found.

@@ -1,0 +1,100 @@
+[INFO] RetroArch 1.22.2 (Git 69a4f0e)
+[INFO] === Build =======================================
+[INFO] CPU Model Name: 12th Gen Intel(R) Core(TM) i7-12700H
+[INFO] Capabilities: MMX MMXEXT SSE SSE2 SSE3 SSSE3 SSE4 SSE42 AES AVX AVX2 
+[INFO] Version: 1.22.2
+[INFO] Git: 69a4f0e
+[INFO] Built: Nov 20 2025
+[INFO] =================================================
+[INFO] [Input] Found input driver: "dinput".
+[INFO] [Core] Loading dynamic libretro core from: "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\RetroArch-Win64\cores\mednafen_psx_libretro.dll".
+[INFO] [Config] Loading config: "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\RetroArch-Win64\retroarch.cfg".
+[INFO] [Config] Appending config: "C:\Users\jazc2\Desktop\NewGameRev\html\RetroArch-Win64\config\offline.cfg".
+[ERROR] [Config] Failed to append config: "C:\Users\jazc2\Desktop\NewGameRev\html\RetroArch-Win64\config\offline.cfg".
+[INFO] [Override] Redirecting save file to "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\RetroArch-Win64\saves\Beetle PSX\Silent Hill.srm".
+[INFO] [Override] Redirecting save state to "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\RetroArch-Win64\states\Beetle PSX\Silent Hill.state".
+[INFO] [Environ] GET_CORE_OPTIONS_VERSION.
+[INFO] [Environ] GET_LANGUAGE: "0".
+[INFO] [Environ] SET_CORE_OPTIONS_V2_INTL.
+[INFO] [Environ] GET_VFS_INTERFACE. Core requested version >= V2, providing V3.
+[INFO] [Environ] GET_LED_INTERFACE.
+[INFO] [Environ] SET_CONTROLLER_INFO.
+[INFO] [Environ] GET_LOG_INTERFACE.
+[INFO] [Environ] GET_SYSTEM_DIRECTORY: "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\RetroArch-Win64\system".
+[INFO] [Environ] GET_SAVE_DIRECTORY: "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\RetroArch-Win64\saves\Beetle PSX".
+[INFO] [Environ] GET_DISK_CONTROL_INTERFACE_VERSION.
+[INFO] [Environ] SET_DISK_CONTROL_EXT_INTERFACE.
+[INFO] [Environ] GET_PERF_INTERFACE.
+[INFO] [Environ] SET_SERIALIZATION_QUIRKS.
+[INFO] [Environ] SET_PERFORMANCE_LEVEL: 15.
+[INFO] [Content] Content loading skipped. Implementation will load it on its own.
+[INFO] [Environ] SET_INPUT_DESCRIPTORS.
+[INFO] [Environ] GET_RUMBLE_INTERFACE.
+[libretro INFO] Rumble interface supported!
+[INFO] [Environ] SET_PIXEL_FORMAT: XRGB8888.
+[ERROR] [Environ] GET_VARIABLE: beetle_psx_pgxp_vertex - Invalid value.
+[ERROR] [Environ] GET_VARIABLE: beetle_psx_pgxp_texture - Invalid value.
+[ERROR] [Environ] GET_VARIABLE: beetle_psx_filter - Invalid value.
+[INFO] [Environ] SET_CONTROLLER_INFO.
+[libretro INFO] Loading "C:\Users\jazc2\Desktop\games\Silent Hill\Silent Hill.cue"
+[libretro INFO] Checking if required firmware is present...
+[libretro INFO] Firmware found: C:\Users\jazc2\Desktop\NewGameRev\Emuladores\RetroArch-Win64\system\scph5501.bin
+[libretro INFO] Firmware SHA1: 0555C6FAE8906F3F09BAF5988F00E55F88E9F30B
+[INFO] [SRAM] Skipping SRAM load.
+[INFO] [Core] Version of libretro API: 1, Compiled against API: 1
+[INFO] [Core] Geometry: 320x240, Aspect: 1.219, FPS: 59.94, Sample rate: 44100.00 Hz.
+[INFO] [Video] Set video size to: fullscreen.
+[INFO] [XInput] Found XInput v1.4.
+[INFO] [Input] Found joypad driver: "dinput".
+[INFO] [D3D11] Device created (Feature Level: 11.0)
+[INFO] [D3D11] Flip model and tear control supported and enabled.
+[INFO] [D3D11] Requesting 1 maximum frame latency, using 1.
+[INFO] [D3D11] Found GPU at index 0: "NVIDIA GeForce RTX 3050 Ti Laptop GPU".
+[INFO] [D3D11] Found GPU at index 1: "NVIDIA GeForce RTX 3050 Ti Laptop GPU".
+[INFO] [D3D11] Found GPU at index 2: "Microsoft Basic Render Driver".
+[INFO] [D3D11] Using GPU index 0.
+[INFO] [Video] Found display server: "win32".
+[INFO] [Audio] Set audio input rate to: 44144.14 Hz.
+[INFO] [WASAPI] Client initialized (shared, PCM, 48000Hz, 64.0ms).
+[INFO] [Audio] Started synchronous audio driver.
+[INFO] [Microphone] Initialized microphone driver.
+[INFO] [Display] Found display driver: "d3d11".
+[INFO] [MIDI] Output device: "Microsoft GS Wavetable Synth".
+[INFO] [NetCMD] bringing_up_command_interface_at_port 55355.
+[libretro INFO] Controller 1: PlayStation Controller
+[libretro INFO] Controller 2: PlayStation Controller
+[INFO] [Playlist] Loading favorites file: "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\RetroArch-Win64\playlists\builtin\content_favorites.lpl".
+[INFO] [Playlist] Loading history file: "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\RetroArch-Win64\playlists\builtin\content_history.lpl".
+[INFO] [Playlist] Loading history file: "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\RetroArch-Win64\playlists\builtin\content_image_history.lpl".
+[INFO] [Playlist] Loading history file: "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\RetroArch-Win64\playlists\builtin\content_music_history.lpl".
+[INFO] [Playlist] Loading history file: "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\RetroArch-Win64\playlists\builtin\content_video_history.lpl".
+[INFO] [Playlist] Written to file: "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\RetroArch-Win64\playlists\builtin\content_history.lpl".
+[INFO] [Environ] SET_GEOMETRY.
+[INFO] [Environ] SET_GEOMETRY: 320x240, Aspect: 1.224.
+[INFO] [Environ] SET_GEOMETRY: 320x240, Aspect: 1.219.
+[INFO] [Environ] SET_GEOMETRY.
+[INFO] [Environ] SET_GEOMETRY.
+[INFO] [Environ] SET_SYSTEM_AV_INFO: 320x240, Aspect: 1.219, FPS: 59.83, Sample rate: 44100.00 Hz.
+[INFO] [Audio] Set audio input rate to: 44228.26 Hz.
+[INFO] [WASAPI] Client initialized (shared, PCM, 48000Hz, 64.0ms).
+[INFO] [Audio] Started synchronous audio driver.
+[INFO] [Display] Found display driver: "d3d11".
+[INFO] [MIDI] Output device: "Microsoft GS Wavetable Synth".
+[INFO] [Environ] SET_GEOMETRY: 320x240, Aspect: 1.306.
+[WARN] [Environ] SET_MESSAGE_EXT: Slow CD image read detected: consider using async or precache CD Access Method
+[INFO] [Environ] SET_SYSTEM_AV_INFO: 320x240, Aspect: 1.306, FPS: 59.94, Sample rate: 44100.00 Hz.
+[INFO] [Audio] Set audio input rate to: 44144.14 Hz.
+[INFO] [WASAPI] Client initialized (shared, PCM, 48000Hz, 64.0ms).
+[INFO] [Audio] Started synchronous audio driver.
+[INFO] [Display] Found display driver: "d3d11".
+[INFO] [MIDI] Output device: "Microsoft GS Wavetable Synth".
+[INFO] [Environ] SET_GEOMETRY: 320x240, Aspect: 1.219.
+[INFO] [Config] Saved config to "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\RetroArch-Win64\retroarch.cfg".
+[INFO] [SRAM] Saving RAM type #0 to "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\RetroArch-Win64\saves\Beetle PSX\Silent Hill.srm".
+[INFO] [SRAM] Saved successfully to "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\RetroArch-Win64\saves\Beetle PSX\Silent Hill.srm".
+[INFO] [Runtime] Content ran for a total of: 00 hours, 00 minutes, 24 seconds.
+[INFO] [Runtime] Saving runtime log file: "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\RetroArch-Win64\playlists\logs\Beetle PSX\Silent Hill.lrtl".
+[INFO] [Core] Unloading game...
+[INFO] [Core] Unloading core...
+[INFO] [Core] Unloading core symbols...
+[INFO] [Core] Saved core options file to "C:\Users\jazc2\Desktop\NewGameRev\Emuladores\RetroArch-Win64\config\Beetle PSX\Beetle PSX.opt".

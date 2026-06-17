@@ -3,6 +3,39 @@ const path = require('path')
 const fs = require('fs')
 const { getOfflineArgs, getOnlineArgs } = require('./configManager')
 const { getNickName } = require('./status')
+const { getGamesDir } = require('./userConfig')
+
+// Solo disponible en el renderer process (donde existe la sesión de Supabase)
+const inRenderer = typeof window !== 'undefined'
+const { updatePresence, setOffline } = inRenderer ? require('./friendsManager') : { updatePresence: () => Promise.resolve(), setOffline: () => Promise.resolve() }
+
+const NETPLAY_HOST = 'netplay.fobby.net'
+const NETPLAY_PORT = '4046'
+
+// Referencia al proceso de juego activo (para poder cerrarlo)
+let currentGameProcess = null
+function killCurrentGame() {
+  if (currentGameProcess) {
+    try { currentGameProcess.kill() } catch (_) {}
+    currentGameProcess = null
+    return true
+  }
+  return false
+}
+function isGameRunning() {
+  return currentGameProcess !== null
+}
+
+// Previene path traversal: resuelve la ruta y verifica que esté dentro del directorio de juegos
+function resolveGamePath(base, ...parts) {
+  const savedDir = getGamesDir()
+  const gamesDir = (savedDir && fs.existsSync(savedDir)) ? savedDir : path.resolve(base, 'games')
+  const resolved = path.resolve(gamesDir, ...parts)
+  if (!resolved.startsWith(gamesDir + path.sep) && resolved !== gamesDir) {
+    throw new Error(`Path traversal detectado: "${parts.join('/')}"`)
+  }
+  return resolved
+}
 
 // Mapa de cores de RetroArch por nombre de carpeta del sistema
 const CORE_MAP = {
@@ -17,22 +50,25 @@ const CORE_MAP = {
 }
 
 function jugar(carpeta, archivo) {
-  const base = __dirname
-  // Detectar sistema por la primera carpeta del path (ej: "PS1" de "PS1/Crash/crash.cue")
+  // Solo usa RetroArch para sistemas explícitamente mapeados (NES, SNES, GBA…)
+  // Todo lo demás (PS1, nombre de juego suelto, etc.) usa mednafen
   const sistema = carpeta.split(/[/\\]/)[0].toUpperCase()
-
-  if (sistema === 'PS1') {
-    jugarMednafen(carpeta, archivo)
-  } else {
+  if (CORE_MAP[sistema]) {
     jugarRetroArch(carpeta, archivo, sistema)
+  } else {
+    jugarMednafen(carpeta, archivo)
   }
 }
 
 function jugarMednafen(carpeta, archivo) {
+  if (currentGameProcess) {
+    console.warn('Ya hay un juego en ejecución.')
+    return { success: false, error: 'already_running' }
+  }
   const base = __dirname
   const mednafenExe = path.join(base, 'Emuladores', 'mednafen-1.32.1-win64', 'mednafen.exe')
   const mednafenDir = path.join(base, 'Emuladores', 'mednafen-1.32.1-win64')
-  const game = path.join(base, 'games', carpeta, archivo)
+  const game = resolveGamePath(base, carpeta, archivo)
   const firmwarePath = path.join(base, 'Emuladores', 'mednafen-1.32.1-win64', 'firmware')
 
   const proc = spawn(mednafenExe, [
@@ -45,15 +81,25 @@ function jugarMednafen(carpeta, archivo) {
     cwd: mednafenDir
   })
 
+  currentGameProcess = proc
+  updatePresence(archivo.replace('.cue', '')).catch(() => {})
+  proc.on('close', () => {
+    if (currentGameProcess === proc) currentGameProcess = null
+    setOffline().catch(() => {})
+  })
   proc.on('error', (err) => console.error('Error spawn mednafen solo:', err.message))
   proc.unref()
 }
 
 function jugarRetroArch(carpeta, archivo, sistema) {
+  if (currentGameProcess) {
+    console.warn('Ya hay un juego en ejecución.')
+    return { success: false, error: 'already_running' }
+  }
   const base = __dirname
   const coreName = CORE_MAP[sistema] || CORE_MAP[carpeta.split(/[/\\]/)[0]] || 'mednafen_psx_libretro.dll'
   const core = path.join(base, 'Emuladores', 'RetroArch-Win64', 'cores', coreName)
-  const game = path.join(base, 'games', carpeta, archivo)
+  const game = resolveGamePath(base, carpeta, archivo)
   const config = path.join(base, 'Emuladores', 'RetroArch-Win64', 'retroarch.cfg')
   const retroarch = path.join(base, 'Emuladores', 'RetroArch-Win64', 'retroarch.exe')
 
@@ -69,16 +115,26 @@ function jugarRetroArch(carpeta, archivo, sistema) {
     cwd: path.join(base, 'Emuladores', 'RetroArch-Win64')
   })
 
+  currentGameProcess = proc
+  updatePresence(archivo).catch(() => {})
+  proc.on('close', () => {
+    if (currentGameProcess === proc) currentGameProcess = null
+    setOffline().catch(() => {})
+  })
   proc.on('error', (err) => console.error('Error spawn RetroArch:', err.message))
   proc.unref()
 }
 
 // Multiplayer: Launch with mednafen netplay as HOST (public server netplay.fobby.net:4046)
 function jugarMultijugador(roomCode, carpeta, archivo) {
+  if (currentGameProcess) {
+    console.warn('Ya hay un juego en ejecución.')
+    return { success: false, error: 'already_running' }
+  }
   const base = __dirname
   const mednafenExe = path.join(base, 'Emuladores', 'mednafen-1.32.1-win64', 'mednafen.exe')
   const mednafenDir = path.join(base, 'Emuladores', 'mednafen-1.32.1-win64')
-  const game = path.join(base, 'games', carpeta, archivo)
+  const game = resolveGamePath(base, carpeta, archivo)
   const nick = getNickName() || 'Jugador'
 
   // Generate random 6-char gamekey — both players must use the same key
@@ -90,8 +146,8 @@ function jugarMultijugador(roomCode, carpeta, archivo) {
     '-filesys.path_firmware', firmwarePath,
     '-video.fs', '1',
     '-connect',
-    '-netplay.host', 'netplay.fobby.net',
-    '-netplay.port', '4046',
+    '-netplay.host', NETPLAY_HOST,
+    '-netplay.port', NETPLAY_PORT,
     '-netplay.nick', nick,
     '-netplay.gamekey', gamekey,
     game
@@ -111,10 +167,18 @@ function jugarMultijugador(roomCode, carpeta, archivo) {
 
 // Multiplayer: Join an existing room by gamekey
 function conectarSalaMednafen(gamekey, carpeta, archivo) {
+  if (currentGameProcess) {
+    console.warn('Ya hay un juego en ejecución.')
+    return { success: false, error: 'already_running' }
+  }
+  if (!/^[A-Z0-9]{1,8}$/i.test(gamekey)) {
+    console.error('Gamekey inválido:', gamekey)
+    return { success: false, error: 'Gamekey inválido' }
+  }
   const base = __dirname
   const mednafenExe = path.join(base, 'Emuladores', 'mednafen-1.32.1-win64', 'mednafen.exe')
   const mednafenDir = path.join(base, 'Emuladores', 'mednafen-1.32.1-win64')
-  const game = path.join(base, 'games', carpeta, archivo)
+  const game = resolveGamePath(base, carpeta, archivo)
   const nick = getNickName() || 'Jugador'
   const firmwarePath = path.join(base, 'Emuladores', 'mednafen-1.32.1-win64', 'firmware')
 
@@ -122,8 +186,8 @@ function conectarSalaMednafen(gamekey, carpeta, archivo) {
     '-filesys.path_firmware', firmwarePath,
     '-video.fs', '1',
     '-connect',
-    '-netplay.host', 'netplay.fobby.net',
-    '-netplay.port', '4046',
+    '-netplay.host', NETPLAY_HOST,
+    '-netplay.port', NETPLAY_PORT,
     '-netplay.nick', nick,
     '-netplay.gamekey', gamekey,
     game
@@ -157,7 +221,7 @@ async function conectarSala(codigo, carpeta, archivo) {
   }
 
   const base = __dirname
-  const game = path.join(base, 'games', carpeta, archivo)
+  const game = resolveGamePath(base, carpeta, archivo)
   const core = path.join(base, 'Emuladores','RetroArch-Win64', 'cores', 'mednafen_psx_libretro.dll')
   const config = path.join(base, 'Emuladores','RetroArch-Win64', 'retroarch.cfg')
   const retroarch = path.join(base, 'Emuladores','RetroArch-Win64', 'retroarch.exe')
@@ -200,7 +264,7 @@ function startNetplay({ mode, ip, port, romPath, mitmServer }) {
   const retroarchPath = path.join(base, 'Emuladores','RetroArch-Win64', 'retroarch.exe');
   const corePath = path.join(base, 'Emuladores','RetroArch-Win64', 'cores', 'mednafen_psx_libretro.dll');
   const configPath = path.join(base, 'Emuladores','RetroArch-Win64', 'retroarch.cfg');
-  const fullRomPath = path.join(base, 'games', romPath);
+  const fullRomPath = resolveGamePath(base, romPath);
 
   let args = ['-L', corePath, '--config', configPath, ...getOnlineArgs(), '--fullscreen', fullRomPath];
 
@@ -217,4 +281,4 @@ function startNetplay({ mode, ip, port, romPath, mitmServer }) {
   return { success: true };
 }
 
-module.exports = { jugar, jugarMultijugador, conectarSala, conectarSalaMednafen, startNetplay }
+module.exports = { jugar, jugarMultijugador, conectarSala, conectarSalaMednafen, startNetplay, killCurrentGame, isGameRunning }

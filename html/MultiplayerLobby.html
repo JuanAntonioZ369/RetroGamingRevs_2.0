@@ -3,14 +3,10 @@
 <head>
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-
-
-
-  <title>GamingRevs - LobbyMultiplayer</title>
+  <title>GamingRevs - Multiplayer</title>
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
 
   <script id="tailwind-config">
     tailwind.config = {
@@ -22,345 +18,471 @@
             "background-light": "#f5f6f8",
             "background-dark": "#101322",
           },
-          fontFamily: {
-            "display": ["Spline Sans"],
-            "mono": ["JetBrains Mono"],
-          },
-          borderRadius: {
-            "DEFAULT": "0.25rem",
-            "lg": "0.5rem",
-            "xl": "0.75rem",
-            "full": "9999px",
-          },
+          fontFamily: { "display": ["Spline Sans"] },
+          borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
         },
       },
     }
   </script>
 
   <style>
-    .neon-glow   { box-shadow: 0 0 15px rgba(13, 51, 242, 0.4); }
-    .neon-border { border: 1px solid rgba(13, 51, 242, 0.3); }
-    ::-webkit-scrollbar             { width: 6px; }
-    ::-webkit-scrollbar-track       { background: transparent; }
-    ::-webkit-scrollbar-thumb       { background: rgba(13, 51, 242, 0.2); border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(13, 51, 242, 0.4); }
+    body { font-family: 'Spline Sans', sans-serif; overflow: hidden; }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(13,51,242,0.2); border-radius: 10px; }
+    .glass-panel { backdrop-filter: blur(12px); background: rgba(16,19,34,0.8); }
+    .neon-glow { box-shadow: 0 0 20px rgba(13,51,242,0.5); }
+    .gamepad-selected { outline: 2px solid #0d33f2 !important; outline-offset: 2px; box-shadow: 0 0 0 4px rgba(13,51,242,0.25) !important; }
+    .view-panel { transition: opacity 0.3s ease, transform 0.3s ease; }
+    .view-panel.hidden { display: none; }
   </style>
 </head>
 
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display min-h-screen flex flex-col overflow-hidden">
+<body class="bg-background-dark text-slate-200 h-screen font-display flex flex-col">
 
-  <!-- ===================== HEADER ===================== -->
-  <header class="h-16 border-b border-primary/10 bg-background-light dark:bg-background-dark flex items-center justify-between px-6 z-10">
-
-    <!-- Back button -->
-    <button id="backBtn" onclick="backToChoice()" class="flex items-center space-x-2 group text-slate-600 dark:text-slate-400 hover:text-primary transition-colors mr-4">
-      <span class="material-icons text-2xl group-hover:-translate-x-1 transition-transform">arrow_back</span>
-      <span class="text-sm font-medium tracking-widest uppercase">Back</span>
+  <!-- ══════════ HEADER ══════════ -->
+  <header class="h-16 glass-panel border-b border-primary/10 flex items-center justify-between px-6 z-10 flex-shrink-0">
+    <button id="backBtn" class="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group">
+      <span class="material-icons-round group-hover:-translate-x-1 transition-transform">arrow_back</span>
+      <span class="text-sm font-medium uppercase tracking-widest">Volver</span>
     </button>
-
-    <!-- Logo -->
     <div class="flex items-center gap-3">
-      <div class="w-10 h-10 bg-primary flex items-center justify-center rounded-lg shadow-lg shadow-primary/20">
-        <img src="../pngLogos/logo.png" alt="Logo" class="w-full h-full object-cover rounded-lg border-2 border-transparent" />
+      <div class="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/30">
+        <img src="../pngLogos/logo.png" alt="Logo" class="w-full h-full object-cover rounded-xl" />
       </div>
-      <h1 class="text-xl font-bold tracking-tight text-primary uppercase italic">
-        GAMINGREVS
-        <span class="text-xs font-normal text-white not-italic ml-2">MultiplayerLobby</span>
+      <h1 class="font-bold text-lg tracking-tight text-white">GAMING<span class="text-primary">REVS</span>
+        <span class="text-xs font-normal text-slate-400 ml-2 not-italic">Multiplayer</span>
       </h1>
     </div>
-
-    <!-- User info -->
-    <div class="flex items-center gap-3 border-l border-primary/10 pl-6">
-      <div class="text-right">
-        <p class="text-sm font-semibold" id="nickname">NamePlayer</p>
-      </div>
-      <img
-        class="w-10 h-10 rounded-full border-2 border-primary object-cover"
-        alt="Gaming user profile avatar"
-        src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9GUUlZ_FL30C1MCXMpWxNbt1vZPRn2pH-gn7QZoOcJ4WnA1mtP3HbXYiOdEezMRbX1BZz4OMcvAW3022dCE2b2Wxfy_cTy-MtoZRSGrPxUEbjDPzOYbDMGtc2d2iAP5LQ_gfeWp_Mwt-Ez_D1xyuSVz49MkwporYgRoqVF6x7dxdY16pj1ozmVgPvEev7pj9Z18gw4vPkA1jpWO5INbJScJronfdl5XVv9STdYGdOUHf2pVUR2gTGyXIeKhH0IVe1DiNZaxZLIeQ"
-      />
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-bold" id="avatar-initial">?</div>
+      <span class="text-sm font-semibold text-white" id="nickname">—</span>
     </div>
-
   </header>
-  <!-- =================== END HEADER =================== -->
 
-
-  <!-- ===================== MAIN ===================== -->
+  <!-- ══════════ MAIN ══════════ -->
   <main class="flex-1 flex overflow-hidden">
 
-    <!-- ─── Left Sidebar / Info ─── -->
-    <nav class="w-72 border-r border-primary/10 p-6 flex flex-col gap-4 bg-background-light/80 dark:bg-background-dark/80">
-      <div class="space-y-6">
-        <p class="text-[10px] font-bold uppercase tracking-widest text-primary/60 px-4">System Info</p>
-        <div class="px-4 py-3 bg-background-light dark:bg-slate-800 rounded-lg">
-          <p class="text-xs font-semibold">Core</p>
-          <p class="text-sm">Beetle PSX</p>
+    <!-- Left Sidebar -->
+    <nav class="w-60 border-r border-primary/10 p-5 flex flex-col gap-4 bg-background-dark/80 flex-shrink-0">
+      <p class="text-[10px] font-bold uppercase tracking-widest text-primary/60">Info de Partida</p>
+
+      <div class="space-y-3">
+        <div class="p-3 bg-slate-800/60 rounded-xl border border-primary/10">
+          <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Juego</p>
+          <p class="text-sm font-semibold text-white mt-1 truncate" id="gameTitle">—</p>
         </div>
-        <div class="px-4 py-3 bg-background-light dark:bg-slate-800 rounded-lg">
-          <p class="text-xs font-semibold">Game</p>
-          <p class="text-sm" id="gameTitle">-</p>
+        <div class="p-3 bg-slate-800/60 rounded-xl border border-primary/10">
+          <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Core</p>
+          <p class="text-sm text-slate-300 mt-1">Mednafen PSX</p>
         </div>
-        <div class="px-4 py-3 bg-background-light dark:bg-slate-800 rounded-lg">
-          <p class="text-xs font-semibold">Controller</p>
-          <p class="text-sm" id="mando">-</p>
+        <div class="p-3 bg-slate-800/60 rounded-xl border border-primary/10">
+          <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Mando</p>
+          <p class="text-sm text-slate-300 mt-1 truncate" id="mando">—</p>
         </div>
+      </div>
+
+      <div class="mt-auto pt-4 border-t border-primary/10 space-y-2">
+        <p class="text-[10px] text-slate-600 uppercase tracking-widest font-bold">Controles Mando</p>
+        <p class="text-[10px] text-slate-600"><span class="text-primary">A</span> — Confirmar</p>
+        <p class="text-[10px] text-slate-600"><span class="text-primary">B</span> — Volver</p>
       </div>
     </nav>
 
-    <!-- ─── Center / Main Interaction Area ─── -->
-    <section class="flex-1 p-12 bg-gradient-to-br from-background-light to-white dark:from-background-dark dark:to-background-dark/50 flex flex-col items-center justify-center relative">
+    <!-- Center -->
+    <section class="flex-1 flex flex-col items-center justify-center p-8 relative bg-gradient-to-br from-background-dark to-slate-900/50">
 
       <!-- Background decoration -->
-      <div class="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none">
-        <img src="../pngLogos/logoFondo.png" alt="Logo" class="w-full h-full object-cover rounded-xl border-2 border-transparent" />
+      <div class="absolute inset-0 flex items-center justify-center opacity-[0.02] pointer-events-none">
+        <img src="../pngLogos/logoFondo.png" alt="" class="w-full h-full object-cover" />
       </div>
 
-      <div class="max-w-xl w-full text-center space-y-8 relative z-10">
+      <div class="w-full max-w-lg relative z-10">
 
-<!-- Dynamic area: choice / join / create -->
-        <div id="choiceView" class="space-y-8 text-center">
-          <h2 class="text-4xl font-extrabold tracking-tight">Multiplayer Lobby</h2>
-          <p class="text-slate-500 dark:text-slate-400">Create a room or join one?</p>
-          <div class="flex justify-center gap-8 mt-6">
-            <button onclick="showCreate()" class="w-48 py-4 bg-primary text-white rounded-xl neon-glow transition-transform hover:scale-105">
-              <span class="material-icons align-middle">add_box</span>
-              <span class="ml-2 font-semibold">Create Room</span>
+        <!-- ── Choice View ── -->
+        <div id="choiceView" class="view-panel text-center space-y-8">
+          <div>
+            <h2 class="text-4xl font-extrabold tracking-tight text-white">Lobby Multijugador</h2>
+            <p class="text-slate-400 mt-2">¿Crear sala o unirte a una?</p>
+          </div>
+          <div class="flex justify-center gap-6">
+            <button id="btn-create" onclick="showCreate()"
+              class="w-44 py-5 bg-primary text-white rounded-2xl neon-glow transition-all hover:scale-105 flex flex-col items-center gap-2 font-semibold">
+              <span class="material-icons-round text-3xl">add_box</span>
+              Crear Sala
             </button>
-            <button onclick="showJoin()" class="w-48 py-4 bg-transparent border-2 border-primary text-primary rounded-xl transition-transform hover:scale-105">
-              <span class="material-icons align-middle">login</span>
-              <span class="ml-2 font-semibold">Join Room</span>
+            <button id="btn-join" onclick="showJoin()"
+              class="w-44 py-5 bg-transparent border-2 border-primary text-primary rounded-2xl transition-all hover:scale-105 hover:bg-primary/5 flex flex-col items-center gap-2 font-semibold">
+              <span class="material-icons-round text-3xl">login</span>
+              Unirse
             </button>
           </div>
+          <p class="text-[11px] text-slate-600">D-Pad ←→ para seleccionar, A para confirmar</p>
         </div>
 
-        <!-- Join room panel -->
-        <div id="joinView" class="hidden opacity-0 transform scale-95 transition-all duration-500">
-          <h2 class="text-4xl font-extrabold tracking-tight">Enter Room Code</h2>
-          <p class="text-slate-500 dark:text-slate-400">Paste the invite code below</p>
-          <div class="mt-6">
-            <input id="joinCode" type="text" maxlength="6" placeholder="XXXXXX" class="w-64 text-center text-2xl font-mono border-b-2 border-primary focus:outline-none" />
+        <!-- ── Join View ── -->
+        <div id="joinView" class="view-panel hidden text-center space-y-6">
+          <div>
+            <h2 class="text-3xl font-extrabold text-white">Ingresar Código</h2>
+            <p class="text-slate-400 mt-2">Pide el código a tu amigo</p>
           </div>
-          <div class="mt-8 flex justify-center gap-4">
-            <button onclick="conectarConCodigo()" class="px-8 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 font-semibold">Connect</button>
-          </div>
+          <input id="joinCode" type="text" maxlength="8" placeholder="XXXXXX"
+            class="w-56 text-center text-3xl font-mono bg-slate-800 border-2 border-primary/30 focus:border-primary rounded-xl py-4 text-white tracking-[0.3em] focus:outline-none focus:ring-2 focus:ring-primary/30 mx-auto block" />
+          <button onclick="conectarConCodigo()"
+            class="px-10 py-3 bg-primary text-white rounded-xl hover:bg-primary/90 font-semibold neon-glow transition-all hover:scale-105">
+            Conectar
+          </button>
         </div>
 
-        <!-- Create room panel -->
-        <div id="createView" class="hidden opacity-0 transform scale-95 transition-all duration-500">
-          <h2 class="text-4xl font-extrabold tracking-tight">Room Created</h2>
-          <p class="text-slate-500 dark:text-slate-400">Share this code with friends</p>
-          <div class="mt-6">
-            <div class="font-mono text-7xl font-bold tracking-[0.2em] text-primary drop-shadow-[0_0_8px_rgba(13,51,242,0.4)]">
-              <span id="generatedCode">AB12CD</span>
-            </div>
-            <div id="loadingBar" class="hidden mt-4 w-full bg-slate-700 rounded-full h-1.5">
-              <div class="bg-primary h-1.5 rounded-full animate-pulse w-full"></div>
-            </div>
+        <!-- ── Create View ── -->
+        <div id="createView" class="view-panel hidden text-center space-y-4">
+          <div>
+            <h2 class="text-3xl font-extrabold text-white">Sala Creada</h2>
+            <p class="text-slate-400 mt-1 text-sm">Comparte este código con tus amigos</p>
           </div>
-        </div>
+          <div class="font-mono text-6xl font-bold tracking-[0.3em] text-primary drop-shadow-[0_0_12px_rgba(13,51,242,0.6)] py-4" id="generatedCode">
+            ——
+          </div>
 
-        <!-- End dynamic area -->
+          <!-- Invite online friends -->
+          <div id="invite-section" class="hidden mt-2 p-4 bg-slate-800/60 rounded-2xl border border-primary/20 text-left">
+            <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-3">Invitar amigos online</p>
+            <div id="invite-list" class="space-y-2 max-h-40 overflow-y-auto custom-scrollbar"></div>
+          </div>
+
+          <p id="invite-empty" class="hidden text-sm text-slate-600">No tienes amigos online para invitar</p>
+        </div>
 
       </div>
     </section>
 
-    <!-- ─── Right Sidebar / Social ─── -->
-    <aside class="w-80 border-l border-primary/10 flex flex-col bg-slate-50 dark:bg-background-dark/80">
-
-      <!-- Sidebar header -->
-      <div class="p-6 border-b border-primary/10 flex items-center justify-between">
-        <h3 class="font-bold tracking-tight">Social</h3>
+    <!-- Right Sidebar: Real Friends -->
+    <aside class="w-72 border-l border-primary/10 flex flex-col bg-background-dark/80 flex-shrink-0">
+      <div class="p-5 border-b border-primary/10 flex items-center justify-between">
+        <h3 class="font-bold text-white text-sm">Amigos</h3>
+        <span id="online-count" class="text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded-full font-bold">0 online</span>
       </div>
 
-      <!-- Search -->
-      <div class="p-4 border-b border-primary/5">
-        <div class="relative">
-          <span class="material-icons absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">search</span>
-          <input
-            class="w-full bg-background-light dark:bg-slate-900 border-primary/10 rounded-lg pl-10 text-xs focus:ring-primary focus:border-primary"
-            placeholder="Find friends..."
-            type="text"
-          />
-        </div>
+      <div class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-1">
+        <p class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2">En línea</p>
+        <div id="friends-online" class="space-y-1 mb-4"></div>
+        <p class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-2 mt-4">Desconectados</p>
+        <div id="friends-offline" class="space-y-1"></div>
       </div>
 
-      <!-- Friends list -->
-      <div class="flex-1 overflow-y-auto p-4 space-y-4">
-
-        <p class="text-[10px] font-bold uppercase tracking-widest text-primary/60">Online — 4</p>
-
-        <!-- Friend: Tifa_Lockhart -->
-        <div class="group flex items-center gap-3 p-2 rounded-xl hover:bg-primary/5 transition-all cursor-default">
-          <div class="relative">
-            <img
-              class="w-10 h-10 rounded-full border-2 border-green-500/50"
-              alt="Online friend avatar"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEhgICp19cmhu6lMsYCXsu6h1B5kcyCJP5_9nlP_1aH_n9dQvks1h3yrDK2fNEyTqAMUoIvjtY6ZSFtm7nypJ8-Yfkm7IXza9Q58O22PycwKwTH0rBdXI5EAESpzg8Q8Bx-Zi4WZiy34w8kOpaIJqC2FnM0PKdubEYmySYM7mbk0npD_OW_e87bK0QDK0QdmKMAksxgBU3244OzdSYdyyNKoMOHPsSEEqDeO1HO3u7TOCnaO3O7Ptx9HXJ9W2w4VkrWVCC0A-oHH4"
-            />
-            <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background-dark rounded-full"></span>
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold truncate">Tifa_Lockhart</p>
-            <p class="text-[10px] text-green-500 font-medium">Online</p>
-          </div>
-          <button class="bg-primary hover:bg-primary/80 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-            <span class="material-icons text-sm">person_add</span>
-          </button>
-        </div>
-
-        <!-- Friend: Sephiroth_X -->
-        <div class="group flex items-center gap-3 p-2 rounded-xl hover:bg-primary/5 transition-all cursor-default">
-          <div class="relative">
-            <img
-              class="w-10 h-10 rounded-full border-2 border-primary/50"
-              alt="Friend in-game avatar"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZthup4G8nSY5L45_pg4s4MsQJC9KPfzmb_HNFi9VvjcrplpwHqokTOerDHGmFKjGk2znnodwGdgDg5zK_xdhdqbUdopKKUxnLOMkvXz4mDw5xanRhtDI3QFt4hM3utVMQVktm1mrHJywONuiL979w7u4rsE2nZ5QPLZuXUsUB9MhOoNnK1_oyrMr4FID1bTLhTGIqwmbYD-HkrYvbt0ZDelK8k_Qw76GQA8mYZmWQvLb5xmsZSey5-baMN5P03GniKNgE1n8vjqE"
-            />
-            <span class="absolute bottom-0 right-0 w-3 h-3 bg-primary border-2 border-background-dark rounded-full"></span>
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold truncate">Sephiroth_X</p>
-            <p class="text-[10px] text-primary font-medium">In: Final Fantasy VII</p>
-          </div>
-          <button class="bg-primary hover:bg-primary/80 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-            <span class="material-icons text-sm">person_add</span>
-          </button>
-        </div>
-
-        <!-- Friend: Aerith_G -->
-        <div class="group flex items-center gap-3 p-2 rounded-xl hover:bg-primary/5 transition-all cursor-default">
-          <div class="relative">
-            <img
-              class="w-10 h-10 rounded-full border-2 border-green-500/50"
-              alt="Online friend avatar"
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnj4xfK0IeXXYzvbB-sLKugCtrqqBwMLhX-gPsrgjwg45zm6AfF7db-2CY-iq_5G6P04nJO143PYl1v1oyQOIbGOe4vWEIxFCpmKEawTwnRABMkilTNbLHXzjSztu5StG7kJsFeRw9OydJrS9xgm3gYtRSMoXf2XZXWt5XWDdS9ywt73p-L03fB1zspJk_etIzqJ2AjN3rd6qTs63KMZU0cHVvAADaZHkFOeuKDlx9X_gCgnLXfpEY6DL3KmE36Wa3B5cJVk9HyK0"
-            />
-            <span class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-background-dark rounded-full"></span>
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold truncate">Aerith_G</p>
-            <p class="text-[10px] text-green-500 font-medium">Online</p>
-          </div>
-          <button class="bg-primary hover:bg-primary/80 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-            <span class="material-icons text-sm">person_add</span>
-          </button>
-        </div>
-
-        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 pt-4">Offline — 12</p>
-
-        <!-- Friend: Zack_Fair (offline) -->
-        <div class="flex items-center gap-3 p-2 opacity-40 grayscale">
-          <img
-            class="w-10 h-10 rounded-full"
-            alt="Offline friend avatar"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuABirEdd3eNOWiWP9_vsGrHw52Az8L_b9-Id26po7WwoxA0--iFtKNcbPStWRO7UeEY8LF-a0d7Mx0Z386m7BqONLUCcKiEJmaJwK7RoZXUCbvowxhChtVYhqPt7VCshRLOYVPZ7hVLyYZ98c9-2_cNsI1eEncNCM3zOKQrLbOeYzuh0M_jDZXtfjVspPtjsvzfmwEMktBqm4cKS9j4zolKoX8-UtLJLNPjkZ5c54Yxk-2nWWpVXINZwDctO17pM2Gf_gu-Q3AR3s4"
-          />
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold truncate">Zack_Fair</p>
-            <p class="text-[10px]">Last seen 3d ago</p>
-          </div>
-        </div>
-
+      <div class="p-4 border-t border-primary/10">
+        <button onclick="loadFriendsPanel()" class="w-full py-2 text-xs text-slate-500 hover:text-primary transition-colors flex items-center justify-center gap-1">
+          <span class="material-icons-round text-sm">refresh</span> Actualizar
+        </button>
       </div>
     </aside>
 
   </main>
-  <!-- =================== END MAIN =================== -->
 
+  <!-- ══════════ TOAST ══════════ -->
+  <div id="toast" class="hidden fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-2xl text-sm font-medium max-w-xs"></div>
+
+  <!-- ══════════ CONFIRM DIALOG ══════════ -->
+  <div id="confirm-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60">
+    <div class="bg-slate-900 border border-primary/20 rounded-2xl p-6 w-72 shadow-2xl">
+      <p id="confirm-msg" class="text-white text-sm font-medium mb-5 text-center"></p>
+      <div class="flex gap-2">
+        <button id="confirm-yes" class="flex-1 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 transition-colors">Sí</button>
+        <button id="confirm-no" class="flex-1 py-2 bg-slate-700 text-slate-300 rounded-lg text-sm hover:bg-slate-600 transition-colors">Cancelar</button>
+      </div>
+    </div>
+  </div>
 
   <script>
-    const { jugarMultijugador, conectarSalaMednafen } = require('../gameOnly');
-    const { getNickName } = require('../status')
+    // ── Requires ──────────────────────────────────────────────────
     const { ipcRenderer } = require('electron');
+    const { jugarMultijugador, conectarSalaMednafen } = require('../gameOnly');
+    const { getNickName, getMandos } = require('../status');
+    const { initGamepad } = require('./gamepadSupport');
 
-    // Extract game parameters from URL
+    function safeRequireAuth()    { try { return require('../supabaseAuth'); }    catch(e) { return null; } }
+    function safeRequireFriends() { try { return require('../friendsManager'); } catch(e) { return null; } }
+
+    function escHTML(str) {
+      return String(str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    // ── State ─────────────────────────────────────────────────────
+    let myProfile = null;
+    let cachedFriends = [];
+    let activeGamekey = null;
+    let currentView = 'choice';
+    let choiceGpIdx = 0;   // 0=Create, 1=Join
+
+    // ── URL params ────────────────────────────────────────────────
     const urlParams = new URLSearchParams(window.location.search);
-    const gameParam = urlParams.get('game');
-    const gameTitle = urlParams.get('title');
+    const gameParam  = urlParams.get('game')  || '';
+    const gameTitle  = urlParams.get('title') || '';
     let carpeta = '', archivo = '';
     if (gameParam) {
-      const lastSlash = gameParam.lastIndexOf('/');
-      carpeta = gameParam.substring(0, lastSlash);
-      archivo = gameParam.substring(lastSlash + 1);
+      const s = gameParam.lastIndexOf('/');
+      carpeta = gameParam.substring(0, s);
+      archivo = gameParam.substring(s + 1);
     }
 
-    // Datos estáticos que se cargan una sola vez
-    document.getElementById('nickname').textContent = getNickName();
-    if (gameTitle) document.getElementById('gameTitle').textContent = gameTitle;
+    // ── Init ──────────────────────────────────────────────────────
+    async function init() {
+      // Game / controller info
+      if (gameTitle) document.getElementById('gameTitle').textContent = gameTitle;
+      try {
+        const mandos = getMandos();
+        document.getElementById('mando').textContent = mandos.mandos[0] || 'No detectado';
+      } catch(e) {}
 
-    // Detectar mando conectado al cargar la página
-    const { getMandos } = require('../status')
-    const mandosInfo = getMandos()
-    document.getElementById('mando').textContent = mandosInfo.mandos[0] || 'No detectado'
+      // Auth
+      const auth = safeRequireAuth();
+      if (auth) {
+        try {
+          const session = await auth.getSession();
+          if (!session) { window.location.href = 'login.html'; return; }
+          myProfile = await auth.getMyProfile();
+          if (myProfile) {
+            document.getElementById('nickname').textContent = myProfile.username;
+            document.getElementById('avatar-initial').textContent = myProfile.username[0].toUpperCase();
+          }
+        } catch(e) { console.error('auth init:', e); }
+      } else {
+        const nick = getNickName();
+        document.getElementById('nickname').textContent = nick;
+        document.getElementById('avatar-initial').textContent = nick[0]?.toUpperCase() || '?';
+      }
 
+      await loadFriendsPanel();
 
-    // Lanza el juego como host — el gamekey se genera localmente, sin polling
-    function iniciarJuegoMultijugador() {
-      const result = jugarMultijugador('', carpeta, archivo)
-      document.getElementById('generatedCode').textContent = result.gamekey
-      document.getElementById('loadingBar').classList.add('hidden')
+      // Check URL param
+      const viewParam = urlParams.get('view');
+      if (viewParam === 'create') showCreate();
+      else showView('choiceView');
     }
 
-    // Conectar a una sala existente por gamekey
-    function conectarConCodigo() {
-      const gamekey = document.getElementById('joinCode').value.trim().toUpperCase()
-      if (!gamekey) return
-      conectarSalaMednafen(gamekey, carpeta, archivo)
+    // ── Friends panel ─────────────────────────────────────────────
+    async function loadFriendsPanel() {
+      const fm = safeRequireFriends();
+      if (!fm) {
+        document.getElementById('friends-online').innerHTML = '<p class="text-xs text-slate-600">No disponible</p>';
+        return;
+      }
+      try {
+        const friends = await fm.getFriends();
+        cachedFriends = friends.filter(f => f.status === 'accepted');
+        const ids = cachedFriends.map(f => f.userId).filter(Boolean);
+        const presenceMap = ids.length ? await fm.getPresenceForUsers(ids) : {};
+        renderFriendsPanel(cachedFriends, presenceMap);
+      } catch(e) { console.error('loadFriendsPanel:', e); }
     }
 
-    function showView(id) {
-      ['choiceView','joinView','createView'].forEach(v => {
-        const el = document.getElementById(v);
-        if (el) {
-          el.classList.add('hidden');
-          el.classList.remove('opacity-100','scale-100');
-        }
-      });
-      const view = document.getElementById(id);
-      if (view) {
-        view.classList.remove('hidden');
-        setTimeout(() => {
-          view.classList.add('opacity-100','scale-100');
-        }, 20);
+    function renderFriendsPanel(friends, presenceMap) {
+      const online  = friends.filter(f => presenceMap[f.userId]?.status === 'online');
+      const offline = friends.filter(f => presenceMap[f.userId]?.status !== 'online');
+
+      const countEl = document.getElementById('online-count');
+      countEl.textContent = online.length + ' online';
+
+      const friendCard = (f, isOnline) => `
+        <div class="flex items-center gap-2 p-2 rounded-xl hover:bg-primary/5 transition-all group">
+          <div class="relative flex-shrink-0">
+            <div class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">${escHTML(f.username[0].toUpperCase())}</div>
+            <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 ${isOnline?'bg-green-500':'bg-slate-600'} rounded-full border-2 border-background-dark"></span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-white truncate">${escHTML(f.username)}</p>
+            <p class="text-[10px] ${isOnline?'text-green-500':'text-slate-600'}">${isOnline?'Online':'Offline'}</p>
+          </div>
+          ${isOnline && activeGamekey ? `<button onclick="doInviteFriend('${escHTML(f.userId)}','${escHTML(f.username)}')"
+            class="opacity-0 group-hover:opacity-100 text-xs px-2 py-1 bg-primary/20 hover:bg-primary text-primary hover:text-white rounded-lg transition-all">
+            <span class="material-icons-round text-xs">send</span>
+          </button>` : ''}
+        </div>`;
+
+      document.getElementById('friends-online').innerHTML  = online.length  ? online.map(f=>friendCard(f,true)).join('')  : '<p class="text-xs text-slate-600 px-2 py-1">Ninguno online</p>';
+      document.getElementById('friends-offline').innerHTML = offline.length ? offline.map(f=>friendCard(f,false)).join('') : '<p class="text-xs text-slate-600 px-2 py-1">—</p>';
+
+      // Update invite section in createView if already visible
+      if (activeGamekey) renderInviteSection(online);
+    }
+
+    function renderInviteSection(onlineFriends) {
+      const section = document.getElementById('invite-section');
+      const empty   = document.getElementById('invite-empty');
+      if (!onlineFriends.length) {
+        section.classList.add('hidden');
+        empty.classList.remove('hidden');
+        return;
+      }
+      section.classList.remove('hidden');
+      empty.classList.add('hidden');
+      document.getElementById('invite-list').innerHTML = onlineFriends.map(f => `
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-xs font-bold flex-shrink-0">${escHTML(f.username[0].toUpperCase())}</div>
+          <span class="flex-1 text-sm text-white truncate">${escHTML(f.username)}</span>
+          <button id="inv-btn-${escHTML(f.userId)}" onclick="doInviteFriend('${escHTML(f.userId)}','${escHTML(f.username)}')"
+            class="text-xs px-3 py-1 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+            Invitar
+          </button>
+        </div>`).join('');
+    }
+
+    async function doInviteFriend(userId, username) {
+      if (!activeGamekey) { showToast('Primero crea una sala', 'error'); return; }
+      const fm = safeRequireFriends();
+      if (!fm) return;
+      const res = await fm.sendInvitation(userId, gameParam, gameTitle, activeGamekey);
+      const btn = document.getElementById('inv-btn-' + userId);
+      if (res.ok) {
+        showToast(`Invitación enviada a ${username}`, 'success');
+        if (btn) { btn.textContent = '✓ Enviada'; btn.disabled = true; btn.className = btn.className + ' opacity-50'; }
+      } else {
+        showToast(res.error || 'Error al enviar', 'error');
       }
     }
 
-    function showJoin() {
-      showView('joinView');
-      document.body.classList.add('bg-slate-800','dark:bg-slate-900');
+    // ── Views ─────────────────────────────────────────────────────
+    function showView(id) {
+      ['choiceView','joinView','createView'].forEach(v => {
+        document.getElementById(v)?.classList.add('hidden');
+      });
+      const el = document.getElementById(id);
+      if (el) el.classList.remove('hidden');
+      currentView = id.replace('View', '');
+      if (currentView === 'choice') updateChoiceGp();
     }
 
     function showCreate() {
       showView('createView');
-      document.body.classList.add('bg-slate-800','dark:bg-slate-900');
+      document.getElementById('generatedCode').textContent = '——';
+      document.getElementById('invite-section').classList.add('hidden');
+      document.getElementById('invite-empty').classList.add('hidden');
       iniciarJuegoMultijugador();
     }
 
+    function showJoin() {
+      showView('joinView');
+      setTimeout(() => document.getElementById('joinCode').focus(), 100);
+    }
+
     function backToChoice() {
-      const createVisible = !document.getElementById('createView').classList.contains('hidden');
-      const joinVisible = !document.getElementById('joinView').classList.contains('hidden');
-      if (createVisible || joinVisible) {
+      if (currentView !== 'choice') {
         showView('choiceView');
-        document.body.classList.remove('bg-slate-800','dark:bg-slate-900');
-        // limpiar &view=create de la URL sin recargar
-        const newUrl = window.location.href.replace('&view=create', '')
-        window.history.replaceState({}, '', newUrl)
         return;
       }
-      const target = 'GameModeSelection.html' + window.location.search;
-      window.location.href = target;
+      window.location.href = 'GameModeSelection.html' + window.location.search;
     }
 
-    // initialize to choice view and wire back button
-    const viewParam = urlParams.get('view')
-
-    if (viewParam === 'create') {
-      showCreate()
-    } else {
-      showView('choiceView')
+    // ── Game actions ──────────────────────────────────────────────
+    async function iniciarJuegoMultijugador() {
+      try {
+        const result = jugarMultijugador('', carpeta, archivo);
+        if (!result || !result.success) {
+          const msg = result?.error === 'already_running'
+            ? 'Ya hay un juego en ejecución. Ciérralo primero.'
+            : (result?.error || 'Error al iniciar');
+          showToast(msg, 'error');
+          showView('choiceView');
+          return;
+        }
+        activeGamekey = result.gamekey;
+        document.getElementById('generatedCode').textContent = result.gamekey;
+        // Show invite section with current online friends
+        const fm = safeRequireFriends();
+        if (fm) {
+          const presenceMap = cachedFriends.length
+            ? await fm.getPresenceForUsers(cachedFriends.map(f=>f.userId).filter(Boolean))
+            : {};
+          const online = cachedFriends.filter(f => presenceMap[f.userId]?.status === 'online');
+          renderInviteSection(online);
+          // Re-render sidebar too
+          renderFriendsPanel(cachedFriends, presenceMap);
+        }
+      } catch(e) {
+        showToast('Error al lanzar el juego', 'error');
+        showView('choiceView');
+      }
     }
-    const backBtn = document.getElementById('backBtn');
-    if (backBtn) backBtn.onclick = backToChoice;
+
+    function conectarConCodigo() {
+      const raw = document.getElementById('joinCode').value.trim().toUpperCase();
+      if (!raw) return;
+      if (!/^[A-Z0-9]{1,8}$/.test(raw)) {
+        showToast('Código inválido. Solo letras y números, máx 8 caracteres.', 'error');
+        return;
+      }
+      const result = conectarSalaMednafen(raw, carpeta, archivo);
+      if (result && !result.success) {
+        showToast(result.error === 'already_running'
+          ? 'Ya hay un juego en ejecución. Ciérralo primero.'
+          : (result.error || 'Error al conectar'), 'error');
+      }
+    }
+
+    // ── Toast ─────────────────────────────────────────────────────
+    let toastTimer = null;
+    function showToast(msg, type = 'info') {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      const colors = { error: 'bg-red-600 text-white', success: 'bg-green-600 text-white', info: 'bg-slate-800 text-white' };
+      toast.className = `fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-2xl text-sm font-medium max-w-xs ${colors[type] || colors.info}`;
+      toast.classList.remove('hidden');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.add('hidden'), 3000);
+    }
+
+    // ── Confirm dialog ────────────────────────────────────────────
+    function showConfirmDialog(msg, onYes) {
+      document.getElementById('confirm-msg').textContent = msg;
+      document.getElementById('confirm-modal').classList.remove('hidden');
+      document.getElementById('confirm-yes').onclick = () => {
+        document.getElementById('confirm-modal').classList.add('hidden');
+        onYes();
+      };
+      document.getElementById('confirm-no').onclick = () => {
+        document.getElementById('confirm-modal').classList.add('hidden');
+      };
+    }
+
+    // ── Gamepad ───────────────────────────────────────────────────
+    function updateChoiceGp() {
+      const create = document.getElementById('btn-create');
+      const join   = document.getElementById('btn-join');
+      if (!create || !join) return;
+      create.classList.toggle('gamepad-selected', choiceGpIdx === 0);
+      join.classList.toggle('gamepad-selected', choiceGpIdx === 1);
+    }
+
+    initGamepad({
+      left: () => {
+        if (currentView === 'choice') { choiceGpIdx = 0; updateChoiceGp(); }
+      },
+      right: () => {
+        if (currentView === 'choice') { choiceGpIdx = 1; updateChoiceGp(); }
+      },
+      up: () => {
+        if (currentView === 'choice') { choiceGpIdx = choiceGpIdx === 0 ? 1 : 0; updateChoiceGp(); }
+      },
+      down: () => {
+        if (currentView === 'choice') { choiceGpIdx = choiceGpIdx === 0 ? 1 : 0; updateChoiceGp(); }
+      },
+      confirm: () => {
+        if (currentView === 'choice') {
+          if (choiceGpIdx === 0) showCreate();
+          else showJoin();
+        } else if (currentView === 'join') {
+          conectarConCodigo();
+        }
+      },
+      back: () => { backToChoice(); }
+    });
+
+    document.getElementById('backBtn').onclick = backToChoice;
+
+    // ── Start ─────────────────────────────────────────────────────
+    init();
   </script>
 
 </body>

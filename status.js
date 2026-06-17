@@ -204,6 +204,11 @@ function getNickName() {
 }
 
 function setNickName(nuevoNick) {
+  const NICK_REGEX = /^[a-zA-Z0-9_\-]{1,16}$/
+  if (typeof nuevoNick !== 'string' || !NICK_REGEX.test(nuevoNick.trim())) {
+    return { ok: false, error: 'Nickname inválido: solo letras, números, guión y underscore, máximo 16 caracteres' }
+  }
+  nuevoNick = nuevoNick.trim()
   try {
     let config = fs.readFileSync(CONFIG_PATH, 'utf8')
     if (config.includes('netplay_nickname')) {
@@ -230,6 +235,11 @@ function getPassword() {
 }
 
 function setPassword(nuevaPassword) {
+  if (typeof nuevaPassword !== 'string') {
+    return { ok: false, error: 'Password inválida' }
+  }
+  // Eliminar comillas dobles que romperían el formato del .cfg, limitar largo
+  nuevaPassword = nuevaPassword.replace(/"/g, '').substring(0, 64)
   try {
     let config = fs.readFileSync(CONFIG_PATH, 'utf8')
     if (config.includes('netplay_password')) {

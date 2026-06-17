@@ -54,6 +54,11 @@
       transform: translateY(-8px) scale(1.02);
       box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5), 0 10px 10px -5px rgba(0,0,0,0.4);
     }
+    .gamepad-selected {
+      outline: 2px solid #0d33f2 !important;
+      outline-offset: 2px;
+      box-shadow: 0 0 0 4px rgba(13,51,242,0.25) !important;
+    }
     .glass-panel {
       backdrop-filter: blur(12px);
       background: rgba(16, 19, 34, 0.8);
@@ -93,23 +98,48 @@
         </div>
       </nav>
 
+      <!-- Gamepad Detector Link -->
+      <div class="px-4 pb-2">
+        <button onclick="window.location.href='gamepadDetector.html'" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors text-sm">
+          <span class="material-icons-round text-primary/60">sports_esports</span>
+          Detector de Mando
+        </button>
+      </div>
+
+      <!-- Games Folder -->
+      <div class="px-4 pb-2">
+        <button onclick="changeGamesDir()" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors text-sm" title="Cambiar carpeta de juegos">
+          <span class="material-icons-round text-primary/60">folder_open</span>
+          Carpeta de Juegos
+        </button>
+        <p id="games-dir-label" class="text-[9px] text-slate-500 px-4 truncate mt-0.5 hidden"></p>
+      </div>
+
+      <!-- Friends button -->
+      <div class="px-4 pb-2">
+        <button onclick="toggleFriendsPanel()" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors text-sm relative">
+          <span class="material-icons-round text-primary/60">group</span>
+          Amigos
+          <span id="friends-badge" class="hidden absolute right-3 top-2 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">0</span>
+        </button>
+      </div>
+
       <!-- User Profile -->
       <div class="p-4 border-t border-slate-200 dark:border-primary/10">
         <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-100 dark:bg-primary/5">
-          <img
-            class="w-10 h-10 rounded-lg object-cover"
-            alt="User profile avatar portrait"
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMGOuvYwNuaJi-9QiAoed-y9T7kpw1ONHlZWkQ_Bg1Rf9C5QomLquPwDjxHECsLzOEP-JaCV-1AjjiW-J8qC6OVSrZ0cUyoEw5_LO4SMEjzACsQEkUF9CqmCeJdg93_UeF16-3PIX-oJ-B4QXKOSFbTzZFuDUYw87kyrlou1IwsDN___wLlH5u5p_KQm9ZPNhZPNuRiLKQuHpVETRlA2Da7-Lmejg0zXzPHte1u73eW5oUwMHYoFUMZZfTSQyfdoRGCgf7Ck18JAY"
-          />
+          <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-bold text-lg" id="avatar-initial">?</div>
           <div class="flex-1 min-w-0">
-            <div class="text-sm font-semibold truncate dark:text-white" id="nickname"></div>
+            <div class="text-sm font-semibold truncate dark:text-white" id="nickname">—</div>
             <div class="flex items-center gap-1.5 text-[10px] text-green-500">
               <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
               Online
             </div>
           </div>
-          <button class="text-slate-400 hover:text-primary transition-colors">
-            <span class="material-icons-round">settings</span>
+          <button onclick="openEditProfile()" title="Editar perfil" class="text-slate-400 hover:text-primary transition-colors">
+            <span class="material-icons-round text-xl">edit</span>
+          </button>
+          <button onclick="doLogout()" title="Cerrar sesión" class="text-slate-400 hover:text-red-400 transition-colors">
+            <span class="material-icons-round text-xl">logout</span>
           </button>
         </div>
       </div>
@@ -249,6 +279,96 @@
   --> 
 
 
+  <!-- ══════════ FIRST-TIME NICKNAME MODAL ══════════ -->
+  <div id="firsttime-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/80">
+    <div class="bg-slate-900 border border-primary/30 rounded-2xl p-8 w-80 shadow-2xl text-center">
+      <div class="w-14 h-14 bg-primary/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <span class="material-icons-round text-primary text-3xl">sports_esports</span>
+      </div>
+      <h3 class="font-bold text-white text-xl mb-1">¿Cómo te llamas?</h3>
+      <p class="text-slate-400 text-xs mb-5">Este nombre se usará en el juego y en el lobby</p>
+      <input id="firsttime-nick" type="text" maxlength="16" placeholder="TuNombre"
+        class="w-full bg-slate-800 text-white border border-slate-600 rounded-xl px-4 py-3 text-sm focus:border-primary focus:outline-none text-center font-bold tracking-wide" />
+      <p id="firsttime-error" class="hidden text-red-400 text-xs mt-2"></p>
+      <button onclick="saveFirstTimeNick()"
+        class="mt-4 w-full py-3 bg-primary text-white rounded-xl text-sm font-bold hover:bg-primary/90 transition-colors">
+        Listo, entrar
+      </button>
+    </div>
+  </div>
+
+  <!-- ══════════ EDIT PROFILE MODAL ══════════ -->
+  <div id="edit-profile-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+    <div class="bg-slate-900 border border-primary/20 rounded-2xl p-6 w-80 shadow-2xl">
+      <h3 class="font-bold text-white text-lg mb-4">Editar Perfil</h3>
+      <label class="text-xs text-slate-400 uppercase tracking-widest font-bold">Nombre de usuario</label>
+      <input id="edit-username" type="text" maxlength="16"
+        class="mt-1 mb-3 w-full bg-slate-800 text-white border border-slate-600 rounded-lg px-3 py-2 text-sm focus:border-primary focus:outline-none" />
+      <p id="edit-error" class="hidden text-red-400 text-xs mb-3"></p>
+      <div class="flex gap-2">
+        <button onclick="saveProfile()" class="flex-1 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 transition-colors">Guardar</button>
+        <button onclick="closeEditProfile()" class="flex-1 py-2 bg-slate-700 text-slate-300 rounded-lg text-sm hover:bg-slate-600 transition-colors">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ FRIENDS PANEL (slide-in) ══════════ -->
+  <div id="friends-panel" class="fixed right-0 top-0 h-full w-80 bg-background-dark border-l border-primary/10 z-40 transform translate-x-full transition-transform duration-300 flex flex-col shadow-2xl">
+    <div class="p-5 border-b border-primary/10 flex items-center justify-between">
+      <h2 class="font-bold text-white">Amigos</h2>
+      <button onclick="toggleFriendsPanel()" class="text-slate-400 hover:text-white transition-colors">
+        <span class="material-icons-round">close</span>
+      </button>
+    </div>
+
+    <!-- Add friend -->
+    <div class="p-4 border-b border-primary/10">
+      <div class="flex gap-2">
+        <input id="friend-search" placeholder="Buscar usuario..." type="text"
+          class="flex-1 bg-slate-800 border-none rounded-lg px-3 py-2 text-sm text-white placeholder-slate-500 focus:ring-1 focus:ring-primary" />
+        <button onclick="doSearchAndAdd()" class="px-3 py-2 bg-primary text-white rounded-lg text-sm hover:bg-primary/90 transition-colors">
+          <span class="material-icons-round text-sm">person_add</span>
+        </button>
+      </div>
+      <div id="search-results" class="mt-2 space-y-1"></div>
+    </div>
+
+    <!-- Pending requests -->
+    <div id="pending-section" class="hidden p-4 border-b border-primary/10">
+      <p class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3">Solicitudes</p>
+      <div id="pending-list" class="space-y-2"></div>
+    </div>
+
+    <!-- Friends list -->
+    <div class="flex-1 overflow-y-auto p-4">
+      <p class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3">En línea</p>
+      <div id="friends-online" class="space-y-2 mb-4"></div>
+      <p class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-3">Desconectados</p>
+      <div id="friends-offline" class="space-y-2"></div>
+    </div>
+  </div>
+  <div id="friends-overlay" onclick="toggleFriendsPanel()" class="hidden fixed inset-0 bg-black/40 z-30"></div>
+
+  <!-- ══════════ INVITATION TOAST ══════════ -->
+  <div id="inv-toast" class="hidden fixed bottom-6 right-6 z-50 bg-slate-800 border border-primary/30 rounded-2xl p-4 shadow-2xl w-80">
+    <div class="flex items-start gap-3">
+      <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary flex-shrink-0">
+        <span class="material-icons-round">sports_esports</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-bold text-white" id="inv-title">Invitación</p>
+        <p class="text-xs text-slate-400 mt-0.5" id="inv-subtitle"></p>
+      </div>
+      <button onclick="dismissInvitation()" class="text-slate-500 hover:text-white transition-colors">
+        <span class="material-icons-round text-sm">close</span>
+      </button>
+    </div>
+    <div class="flex gap-2 mt-3">
+      <button id="inv-accept-btn" class="flex-1 py-2 bg-primary text-white rounded-lg text-xs font-bold hover:bg-primary/90 transition-colors">Unirse</button>
+      <button onclick="dismissInvitation()" class="flex-1 py-2 bg-slate-700 text-slate-300 rounded-lg text-xs font-bold hover:bg-slate-600 transition-colors">Rechazar</button>
+    </div>
+  </div>
+
   <!-- Background Decoration Icons -->
   <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.01] pointer-events-none">
     <img src="../pngLogos/logoFondo.png" alt="Logo" class="w-full h-full object-cover rounded-xl border-2 border-transparent" />
@@ -256,22 +376,103 @@
 
 
 
+ <!-- ══════════ CONFIRM DIALOG ══════════ -->
+  <div id="confirm-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60">
+    <div class="bg-slate-900 border border-primary/20 rounded-2xl p-6 w-72 shadow-2xl">
+      <p id="confirm-msg" class="text-white text-sm font-medium mb-5 text-center"></p>
+      <div class="flex gap-2">
+        <button id="confirm-yes" class="flex-1 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 transition-colors">Sí</button>
+        <button id="confirm-no" class="flex-1 py-2 bg-slate-700 text-slate-300 rounded-lg text-sm hover:bg-slate-600 transition-colors">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
  <!---------------- SCRIP  ----------------->
 
   <script>
-    const { getNickName } = require('../status')
+    // ── Requires seguros (no fallan) ──────────────────────────────
+    const { getNickName, setNickName } = require('../status');
+    const { getLocalNick, setLocalNick } = require('../userConfig');
     const { ipcRenderer } = require('electron');
+    const { initGamepad } = require('./gamepadSupport');
 
-    document.getElementById('nickname').textContent = getNickName();
+    // ── Helpers de Supabase (lazy — solo se cargan si están disponibles) ──
+    function safeRequireAuth()    { try { return require('../supabaseAuth'); }    catch(e) { return null; } }
+    function safeRequireFriends() { try { return require('../friendsManager'); } catch(e) { return null; } }
+
+    // ── Estado global ─────────────────────────────────────────────
+    let myProfile = null;
+    let unsubInvitations = () => {};
+    let unsubPresence    = () => {};
+    let friendsPanelOpen = false;
+    let currentInvitation = null;
+    let cachedFriends = [];
+
+    function escHTML(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+    }
+
+    function showConfirmDialog(msg, onYes) {
+      document.getElementById('confirm-msg').textContent = msg;
+      document.getElementById('confirm-modal').classList.remove('hidden');
+      document.getElementById('confirm-yes').onclick = () => {
+        document.getElementById('confirm-modal').classList.add('hidden');
+        onYes();
+      };
+      document.getElementById('confirm-no').onclick = () => {
+        document.getElementById('confirm-modal').classList.add('hidden');
+      };
+    }
 
     let allFolders = [];
     let currentFolder = null;
     let currentView = 'list';
 
-    ipcRenderer.on('folders-list', (event, folders) => {
-      allFolders = folders;
-      renderView();
-    });
+    // Pedir juegos al main process (IPC invoke como fuente principal, evento como fallback)
+    async function loadGames() {
+      try {
+        const folders = await ipcRenderer.invoke('request-games');
+        allFolders = folders || [];
+        renderView();
+        updateGamesDirLabel();
+        return;
+      } catch(e) {}
+      // fallback: esperar el evento si invoke falla
+      ipcRenderer.once('folders-list', (event, folders) => {
+        allFolders = folders;
+        renderView();
+        updateGamesDirLabel();
+      });
+    }
+    loadGames();
+
+    async function updateGamesDirLabel() {
+      try {
+        const dir = await ipcRenderer.invoke('get-games-dir');
+        const label = document.getElementById('games-dir-label');
+        label.textContent = dir;
+        label.classList.remove('hidden');
+      } catch(e) {}
+    }
+
+    async function changeGamesDir() {
+      try {
+        const chosen = await ipcRenderer.invoke('choose-games-dir');
+        if (!chosen) return; // usuario canceló
+        currentFolder = null;
+        allFolders = [];
+        renderView();
+        const folders = await ipcRenderer.invoke('request-games');
+        allFolders = folders || [];
+        renderView();
+        updateGamesDirLabel();
+      } catch(e) { console.error('changeGamesDir:', e); }
+    }
 
     function renderView() {
       const searchInput = document.getElementById('search-input');
@@ -299,7 +500,7 @@
       container.innerHTML = '';
 
       if (folders.length === 0) {
-        container.innerHTML = '<p class="col-span-full text-slate-400 text-center py-16">No hay carpetas en games/</p>';
+        container.innerHTML = '<div class="col-span-full text-center py-16"><p class="text-slate-400 mb-3">No hay juegos en la carpeta seleccionada</p><button onclick="changeGamesDir()" class="px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary rounded-xl text-sm font-medium transition-colors">Cambiar carpeta de juegos</button></div>';
         return;
       }
 
@@ -310,7 +511,7 @@
           <div class="flex flex-col items-center gap-3 text-center">
             <span class="material-icons-round text-5xl text-primary/50 group-hover:text-primary transition-colors">folder</span>
             <div>
-              <h3 class="font-bold text-sm dark:text-white">${folder.name}</h3>
+              <h3 class="font-bold text-sm dark:text-white">${escHTML(folder.name)}</h3>
               <p class="text-xs text-slate-400 mt-1">${folder.games.length} juego${folder.games.length !== 1 ? 's' : ''}</p>
             </div>
           </div>
@@ -339,12 +540,18 @@
           const card = document.createElement('div');
           card.className = 'flex items-center gap-4 p-4 bg-slate-100 dark:bg-slate-800 rounded-lg';
           card.innerHTML = `
-            <img class="w-12 h-12 rounded-lg object-cover flex-shrink-0" src="../pngLogos/${game.title}.png" onerror="this.src='../pngLogos/logoFondo.png'" alt="${game.title}" />
+            <img class="w-12 h-12 rounded-lg object-cover flex-shrink-0" src="../pngLogos/${escHTML(game.title)}.png" onerror="this.src='../pngLogos/logoFondo.png'" alt="${escHTML(game.title)}" />
             <div class="flex-1 min-w-0">
-              <h3 class="font-bold text-sm dark:text-white truncate">${game.title}</h3>
+              <h3 class="font-bold text-sm dark:text-white truncate">${escHTML(game.title)}</h3>
             </div>
-            <button onclick="playGame('${game.romPath}', '${game.title}')" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm font-medium">Play</button>
+            <button class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm font-medium">Play</button>
           `;
+          card.dataset.romPath = game.romPath;
+          card.dataset.title = game.title;
+          card.querySelector('button').addEventListener('click', (e) => {
+            e.stopPropagation();
+            playGame(card.dataset.romPath, card.dataset.title);
+          });
           container.appendChild(card);
         });
       } else {
@@ -354,16 +561,22 @@
           card.className = 'group game-card relative';
           card.innerHTML = `
             <div class="aspect-[4/5] rounded-xl overflow-hidden bg-slate-200 dark:bg-slate-800 shadow-xl border border-white/10 relative">
-              <img class="w-full h-full object-cover" alt="${game.title}" src="../pngLogos/${game.title}.png" onerror="this.src='../pngLogos/logoFondo.png'" />
+              <img class="w-full h-full object-cover" alt="${escHTML(game.title)}" src="../pngLogos/${escHTML(game.title)}.png" onerror="this.src='../pngLogos/logoFondo.png'" />
               <div class="play-overlay absolute inset-0 bg-gradient-to-t from-primary/90 via-primary/40 to-transparent opacity-0 flex flex-col items-center justify-center p-6 transition-all duration-300">
-                <button onclick="playGame('${game.romPath}', '${game.title}')" class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-primary shadow-2xl mb-4 hover:scale-110 transition-transform">
+                <button class="w-16 h-16 bg-white rounded-full flex items-center justify-center text-primary shadow-2xl mb-4 hover:scale-110 transition-transform">
                   <span class="material-icons-round text-3xl">play_arrow</span>
                 </button>
-                <div class="text-white font-bold text-lg leading-tight">${game.title}</div>
+                <div class="text-white font-bold text-lg leading-tight">${escHTML(game.title)}</div>
               </div>
             </div>
-            <h3 class="mt-3 font-bold text-sm truncate dark:text-white">${game.title}</h3>
+            <h3 class="mt-3 font-bold text-sm truncate dark:text-white">${escHTML(game.title)}</h3>
           `;
+          card.dataset.romPath = game.romPath;
+          card.dataset.title = game.title;
+          card.querySelector('button').addEventListener('click', (e) => {
+            e.stopPropagation();
+            playGame(card.dataset.romPath, card.dataset.title);
+          });
           container.appendChild(card);
         });
       }
@@ -378,17 +591,316 @@
       window.location.href = 'gameModeSelection.html?game=' + encodeURIComponent(romPath) + '&title=' + encodeURIComponent(title);
     }
 
-    // Search — filtra juegos dentro de la carpeta actual
+    // Search — filtra carpetas en root, juegos dentro de carpeta
     document.getElementById('search-input').addEventListener('input', (e) => {
-      if (currentFolder === null) return;
       const query = e.target.value.toLowerCase();
-      const filtered = currentFolder.games.filter(g => g.title.toLowerCase().includes(query));
-      renderGames(filtered, currentView);
+      if (currentFolder === null) {
+        if (!query) { renderFolders(allFolders); return; }
+        const filtered = allFolders.filter(f =>
+          f.name.toLowerCase().includes(query) ||
+          f.games.some(g => g.title.toLowerCase().includes(query))
+        );
+        renderFolders(filtered);
+      } else {
+        const filtered = currentFolder.games.filter(g => g.title.toLowerCase().includes(query));
+        renderGames(filtered, currentView);
+      }
     });
 
     // View toggle
     document.getElementById('grid-btn').addEventListener('click', () => setView('grid'));
     document.getElementById('list-btn').addEventListener('click', () => setView('list'));
+
+    // ── Auth + Nickname local ─────────────────────────────────────
+    async function initAuth() {
+      try {
+        // 1. Verificar sesión Supabase
+        const auth = safeRequireAuth();
+        if (auth) {
+          const session = await auth.getSession();
+          if (!session) { window.location.href = 'login.html'; return; }
+          myProfile = await auth.getMyProfile().catch(() => null);
+        }
+
+        // 2. Nickname: siempre desde JSON local (fuente de verdad)
+        let nick = getLocalNick();
+
+        if (!nick) {
+          // Primera vez: mostrar modal para pedir nickname
+          document.getElementById('firsttime-modal').classList.remove('hidden');
+          setTimeout(() => document.getElementById('firsttime-nick').focus(), 100);
+          return; // initAuth continuará en saveFirstTimeNick()
+        }
+
+        applyNick(nick);
+
+        // 3. Cargar amigos (no bloquea el resto)
+        const fm = safeRequireFriends();
+        if (fm) {
+          fm.subscribeToInvitations(showInvitationToast).then(u => { unsubInvitations = u; }).catch(() => {});
+          loadFriends().catch(() => {});
+        }
+      } catch(e) { console.error('initAuth:', e); }
+    }
+
+    function applyNick(nick) {
+      document.getElementById('nickname').textContent = nick;
+      document.getElementById('avatar-initial').textContent = nick[0].toUpperCase();
+      setNickName(nick); // sincroniza retroarch.cfg para netplay
+    }
+
+    // Modal primera vez
+    function saveFirstTimeNick() {
+      const nick = document.getElementById('firsttime-nick').value.trim();
+      const errEl = document.getElementById('firsttime-error');
+      errEl.classList.add('hidden');
+      if (!nick || nick.length < 3) {
+        errEl.textContent = 'Mínimo 3 caracteres'; errEl.classList.remove('hidden'); return;
+      }
+      if (!/^[a-zA-Z0-9_\-]+$/.test(nick)) {
+        errEl.textContent = 'Solo letras, números, guión y underscore'; errEl.classList.remove('hidden'); return;
+      }
+      setLocalNick(nick);
+      document.getElementById('firsttime-modal').classList.add('hidden');
+      applyNick(nick);
+      // Intentar actualizar Supabase también, sin bloquear
+      safeRequireAuth()?.updateUsername(nick).catch(() => {});
+      // Cargar amigos ahora
+      const fm = safeRequireFriends();
+      if (fm) {
+        fm.subscribeToInvitations(showInvitationToast).then(u => { unsubInvitations = u; }).catch(() => {});
+        loadFriends().catch(() => {});
+      }
+    }
+
+    // Enter en el modal de primera vez
+    document.getElementById('firsttime-nick').addEventListener('keydown', e => {
+      if (e.key === 'Enter') saveFirstTimeNick();
+    });
+
+    function doLogout() {
+      showConfirmDialog('¿Cerrar sesión?', async () => {
+        try { unsubInvitations(); unsubPresence(); } catch(_) {}
+        const auth = safeRequireAuth();
+        if (auth) await auth.logoutUser();
+        window.location.href = 'login.html';
+      });
+    }
+
+    function openEditProfile() {
+      document.getElementById('edit-username').value = getLocalNick();
+      document.getElementById('edit-error').classList.add('hidden');
+      document.getElementById('edit-profile-modal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('edit-username').focus(), 50);
+    }
+    function closeEditProfile() {
+      document.getElementById('edit-profile-modal').classList.add('hidden');
+    }
+    function saveProfile() {
+      const newName = document.getElementById('edit-username').value.trim();
+      const errEl = document.getElementById('edit-error');
+      errEl.classList.add('hidden');
+      if (!newName || newName.length < 3) {
+        errEl.textContent = 'Mínimo 3 caracteres'; errEl.classList.remove('hidden'); return;
+      }
+      if (!/^[a-zA-Z0-9_\-]+$/.test(newName)) {
+        errEl.textContent = 'Solo letras, números, guión y underscore'; errEl.classList.remove('hidden'); return;
+      }
+      // Guardar en JSON local (fuente de verdad) + retroarch.cfg
+      setLocalNick(newName);
+      applyNick(newName);
+      closeEditProfile();
+      // Intentar sincronizar con Supabase en segundo plano, sin bloquear
+      safeRequireAuth()?.updateUsername(newName).catch(() => {});
+    }
+
+    // ── Friends ───────────────────────────────────────────────────
+    function toggleFriendsPanel() {
+      friendsPanelOpen = !friendsPanelOpen;
+      document.getElementById('friends-panel').classList.toggle('translate-x-full', !friendsPanelOpen);
+      document.getElementById('friends-overlay').classList.toggle('hidden', !friendsPanelOpen);
+      if (friendsPanelOpen) loadFriends();
+    }
+
+    async function loadFriends() {
+      const fm = safeRequireFriends();
+      if (!fm) return;
+      try {
+        const friends = await fm.getFriends();
+        cachedFriends = friends;
+        const pending = await fm.getPendingRequests();
+        const badge = document.getElementById('friends-badge');
+        const pendingSection = document.getElementById('pending-section');
+        if (pending.length > 0) {
+          badge.textContent = pending.length;
+          badge.classList.remove('hidden');
+          pendingSection.classList.remove('hidden');
+          document.getElementById('pending-list').innerHTML = pending.map(p => `
+            <div class="flex items-center gap-2 p-2 bg-slate-800 rounded-lg">
+              <div class="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-xs font-bold">${escHTML((p.requester?.username||'?')[0].toUpperCase())}</div>
+              <span class="flex-1 text-sm text-white truncate">${escHTML(p.requester?.username||'???')}</span>
+              <button onclick="doAcceptFriend('${p.id}')" class="text-green-400"><span class="material-icons-round text-sm">check</span></button>
+              <button onclick="doRemoveFriend('${p.id}')" class="text-red-400"><span class="material-icons-round text-sm">close</span></button>
+            </div>`).join('');
+        } else {
+          badge.classList.add('hidden');
+          pendingSection.classList.add('hidden');
+        }
+        const accepted = friends.filter(f => f.status === 'accepted');
+        const ids = accepted.map(f => f.userId).filter(Boolean);
+        const presenceMap = ids.length ? await fm.getPresenceForUsers(ids) : {};
+        try { unsubPresence(); } catch(_) {}
+        unsubPresence = await fm.subscribeToPresence(ids, m => renderFriendsList(accepted, m));
+        renderFriendsList(accepted, presenceMap);
+      } catch(e) { console.error('loadFriends:', e); }
+    }
+
+    function renderFriendsList(friends, presenceMap) {
+      const online  = friends.filter(f => presenceMap[f.userId]?.status === 'online');
+      const offline = friends.filter(f => presenceMap[f.userId]?.status !== 'online');
+      const card = (f, on) => {
+        const p = presenceMap[f.userId];
+        const game = p?.current_game ? `<span class="text-primary text-[10px]">${escHTML(p.current_game)}</span>` : '';
+        return `<div class="flex items-center gap-2 p-2 rounded-lg hover:bg-slate-800/50 group">
+          <div class="relative">
+            <div class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-sm font-bold">${escHTML(f.username[0].toUpperCase())}</div>
+            <span class="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 ${on?'bg-green-500':'bg-slate-600'} rounded-full border-2 border-background-dark"></span>
+          </div>
+          <div class="flex-1 min-w-0"><p class="text-sm text-white truncate">${escHTML(f.username)}</p>${game}</div>
+          ${on ? `<button onclick="doInviteFriend('${f.userId}','${escHTML(f.username)}')" class="hidden group-hover:block text-slate-400 hover:text-primary"><span class="material-icons-round text-sm">send</span></button>` : ''}
+        </div>`;
+      };
+      document.getElementById('friends-online').innerHTML  = online.length  ? online.map(f=>card(f,true)).join('')  : '<p class="text-xs text-slate-600">Ninguno online</p>';
+      document.getElementById('friends-offline').innerHTML = offline.length ? offline.map(f=>card(f,false)).join('') : '<p class="text-xs text-slate-600">—</p>';
+    }
+
+    async function doSearchAndAdd() {
+      const q = document.getElementById('friend-search').value.trim();
+      if (!q) return;
+      const fm = safeRequireFriends();
+      if (!fm) return;
+      const results = await fm.searchUser(q);
+      const c = document.getElementById('search-results');
+      c.innerHTML = results.length
+        ? results.map(u => `<div class="flex items-center gap-2 p-2 bg-slate-800 rounded-lg"><span class="flex-1 text-sm text-white">${escHTML(u.username)}</span><button onclick="doAddFriend('${u.id}')" class="text-xs text-primary font-medium">Agregar</button></div>`).join('')
+        : '<p class="text-xs text-slate-500">Sin resultados</p>';
+    }
+    async function doAddFriend(userId) {
+      const fm = safeRequireFriends();
+      if (!fm) return;
+      await fm.sendFriendRequest(userId);
+      document.getElementById('search-results').innerHTML = '<p class="text-xs text-green-400">¡Solicitud enviada!</p>';
+    }
+    async function doAcceptFriend(id) { const fm=safeRequireFriends(); if(fm) await fm.acceptFriendRequest(id); await loadFriends(); }
+    async function doRemoveFriend(id)  { const fm=safeRequireFriends(); if(fm) await fm.removeFriend(id); await loadFriends(); }
+    async function doInviteFriend(userId, username) {
+      const msg = document.createElement('div');
+      msg.textContent = `Para invitar a ${escHTML(username)}: crea una sala en multijugador y comparte el código.`;
+      msg.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 border border-primary/20 text-white px-5 py-3 rounded-xl text-sm shadow-xl z-50 max-w-xs text-center';
+      document.body.appendChild(msg);
+      setTimeout(() => msg.remove(), 3500);
+    }
+
+    // ── Invitations ───────────────────────────────────────────────
+    function showInvitationToast(inv) {
+      currentInvitation = inv;
+      document.getElementById('inv-title').textContent = `${inv.senderName} te invita`;
+      document.getElementById('inv-subtitle').textContent = inv.game_title;
+      document.getElementById('inv-accept-btn').onclick = () => joinInvitation(inv);
+      document.getElementById('inv-toast').classList.remove('hidden');
+    }
+    async function joinInvitation(inv) {
+      const fm = safeRequireFriends();
+      if (fm) await fm.acceptInvitation(inv.id);
+      dismissInvitation();
+      const { conectarSalaMednafen } = require('../gameOnly');
+      const s = inv.game_path.lastIndexOf('/');
+      conectarSalaMednafen(inv.gamekey, inv.game_path.substring(0,s), inv.game_path.substring(s+1));
+    }
+    function dismissInvitation() {
+      if (currentInvitation) { const fm=safeRequireFriends(); if(fm) fm.declineInvitation(currentInvitation.id).catch(()=>{}); }
+      currentInvitation = null;
+      document.getElementById('inv-toast').classList.add('hidden');
+    }
+
+    // ── Gamepad navigation ────────────────────────────────────────
+    let gpSelectedIdx = 0;
+
+    async function handleCloseGame() {
+      const closed = await ipcRenderer.invoke('kill-game');
+      if (!closed) {
+        // No había juego abierto — mostrar aviso breve
+        const msg = document.createElement('div');
+        msg.textContent = 'No hay juego abierto';
+        msg.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-5 py-2 rounded-xl text-sm shadow-xl z-50';
+        document.body.appendChild(msg);
+        setTimeout(() => msg.remove(), 2000);
+      }
+    }
+
+    function getSelectableItems() {
+      return Array.from(document.querySelectorAll('#games-grid > div'));
+    }
+
+    function applyGamepadSelection(items) {
+      items.forEach((el, i) => {
+        el.classList.toggle('gamepad-selected', i === gpSelectedIdx);
+      });
+      const sel = items[gpSelectedIdx];
+      if (sel) sel.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+
+    initGamepad({
+      up: () => {
+        const items = getSelectableItems();
+        if (!items.length) return;
+        gpSelectedIdx = (gpSelectedIdx - 1 + items.length) % items.length;
+        applyGamepadSelection(items);
+      },
+      down: () => {
+        const items = getSelectableItems();
+        if (!items.length) return;
+        gpSelectedIdx = (gpSelectedIdx + 1) % items.length;
+        applyGamepadSelection(items);
+      },
+      left: () => {
+        const items = getSelectableItems();
+        if (!items.length) return;
+        gpSelectedIdx = (gpSelectedIdx - 1 + items.length) % items.length;
+        applyGamepadSelection(items);
+      },
+      right: () => {
+        const items = getSelectableItems();
+        if (!items.length) return;
+        gpSelectedIdx = (gpSelectedIdx + 1) % items.length;
+        applyGamepadSelection(items);
+      },
+      confirm: () => {
+        const items = getSelectableItems();
+        const sel = items[gpSelectedIdx];
+        if (!sel) return;
+        if (currentFolder === null) {
+          // En vista de carpetas: el card tiene onclick propio
+          sel.click();
+          gpSelectedIdx = 0;
+        } else {
+          // En vista de juegos: leer romPath del dataset y navegar
+          const romPath = sel.dataset.romPath;
+          const title = sel.dataset.title;
+          if (romPath) playGame(romPath, title);
+        }
+      },
+      back: () => {
+        if (currentFolder !== null) { backToFolders(); gpSelectedIdx = 0; }
+      },
+      y: () => {
+        // Y / Triángulo → toggle grid/list
+        if (currentFolder !== null) setView(currentView === 'list' ? 'grid' : 'list');
+      },
+      start: () => {
+        window.location.href = 'gamepadDetector.html';
+      }
+    });
 
     function setView(view) {
       currentView = view;
@@ -400,6 +912,9 @@
         : 'p-1.5 rounded-md text-slate-400 hover:text-primary transition-colors';
       if (currentFolder) renderGames(currentFolder.games, currentView);
     }
+
+    // ── Arrancar ──────────────────────────────────────────────────
+    initAuth();
   </script>
 
 </body>

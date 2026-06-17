@@ -1,5 +1,17 @@
+# ── Dependencias ─────────────────────────────────────────────────
 node_modules/
+
+# ── Juegos del usuario (ROMs) ────────────────────────────────────
 games/
-RetroArch-Win64/
+
+# ── Configuración local del usuario ──────────────────────────────
+userData.json
+
+# ── Documentos de referencia (no son parte de la app) ────────────
+*.docx
+*.sql
+html/servidor_optimizacion.md
+
+# ── Claude Code ──────────────────────────────────────────────────
 .claude/
 CLAUDE.md

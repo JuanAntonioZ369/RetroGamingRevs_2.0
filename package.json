@@ -7,6 +7,10 @@
     "start": "electron ."
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.108.2",
     "electron": "^25.0.0"
+  },
+  "devDependencies": {
+    "docx": "^9.7.1"
   }
 }

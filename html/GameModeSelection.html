@@ -112,7 +112,7 @@
             </p>
           </div>
           <div class="mt-auto space-y-3">
-            <button onclick="jugar(carpeta, archivo)" class="w-full py-4 bg-white/10 hover:bg-white/20 rounded-lg font-bold text-sm tracking-widest uppercase flex items-center justify-center space-x-2 transition-all">
+            <button onclick="const r=jugar(carpeta,archivo);if(r&&!r.success&&r.error==='already_running')showToast('Ya hay un juego en ejecución. Ciérralo primero (Select+Start).');" class="w-full py-4 bg-white/10 hover:bg-white/20 rounded-lg font-bold text-sm tracking-widest uppercase flex items-center justify-center space-x-2 transition-all">
               <span class="material-icons text-lg">play_arrow</span>
               <span>Start New Game</span>
             </button>
@@ -162,24 +162,106 @@
   <!-- Screen vignette overlay for depth -->
   <div class="fixed inset-0 pointer-events-none border-[30px] border-background-dark/20"></div>
 
+  <style>
+    .card-gamepad-selected {
+      border-color: #0d33f2 !important;
+      box-shadow: 0 0 0 3px rgba(13,51,242,0.4), 0 0 30px rgba(13,51,242,0.25);
+      transform: translateY(-4px);
+    }
+    .hint-badge {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      background: rgba(16,19,34,0.9); border: 1px solid rgba(13,51,242,0.3);
+      color: #94a3b8; font-size: 11px; padding: 6px 16px; border-radius: 999px;
+      display: flex; gap: 12px; align-items: center; z-index: 50;
+    }
+    .hint-badge span { color: #fff; font-weight: 700; }
+  </style>
+
+  <!-- ══════════ CONFIRM DIALOG ══════════ -->
+  <div id="confirm-modal" class="hidden fixed inset-0 z-[60] flex items-center justify-center bg-black/60">
+    <div class="bg-slate-900 border border-primary/20 rounded-2xl p-6 w-72 shadow-2xl">
+      <p id="confirm-msg" class="text-white text-sm font-medium mb-5 text-center"></p>
+      <div class="flex gap-2">
+        <button id="confirm-yes" class="flex-1 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 transition-colors">Sí</button>
+        <button id="confirm-no" class="flex-1 py-2 bg-slate-700 text-slate-300 rounded-lg text-sm hover:bg-slate-600 transition-colors">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ TOAST ══════════ -->
+  <div id="toast" class="hidden fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-2xl text-sm font-medium max-w-xs bg-red-600 text-white"></div>
+
   <script>
     const { jugar } = require('../gameOnly');
-
     const { ipcRenderer } = require('electron');
+    const { initGamepad } = require('./gamepadSupport');
+
+    function showConfirmDialog(msg, onYes) {
+      document.getElementById('confirm-msg').textContent = msg;
+      document.getElementById('confirm-modal').classList.remove('hidden');
+      document.getElementById('confirm-yes').onclick = () => {
+        document.getElementById('confirm-modal').classList.add('hidden');
+        onYes();
+      };
+      document.getElementById('confirm-no').onclick = () => {
+        document.getElementById('confirm-modal').classList.add('hidden');
+      };
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 3000);
+    }
 
     const urlParams = new URLSearchParams(window.location.search);
     const gameParam = urlParams.get('game');
     const gameTitle = urlParams.get('title');
-    
-    // Actualizar el título del juego
+
     if (gameTitle) {
       document.querySelector('h1').textContent = gameTitle.toUpperCase();
     }
 
-    // Dividir gameParam en carpeta y archivo (soporta rutas con subcarpetas)
+    if (!gameParam) { window.location.href = 'mainLobby.html'; }
     const lastSlash = gameParam.lastIndexOf('/');
     const carpeta = gameParam.substring(0, lastSlash);
     const archivo = gameParam.substring(lastSlash + 1);
+
+    // ── Gamepad navigation ──────────────────────────────────────
+    const cards = document.querySelectorAll('.card-hover');
+    let selectedCard = 0; // 0 = Solo, 1 = Online
+
+    function applyCardSelection() {
+      cards.forEach((c, i) => c.classList.toggle('card-gamepad-selected', i === selectedCard));
+    }
+    applyCardSelection();
+
+    // Mostrar hints de mando
+    const hint = document.createElement('div');
+    hint.className = 'hint-badge';
+    hint.innerHTML = '<span>A</span> Confirmar &nbsp;<span>B</span> Volver &nbsp;<span>←→</span> Cambiar';
+    document.body.appendChild(hint);
+
+    initGamepad({
+      left:  () => { selectedCard = 0; applyCardSelection(); },
+      right: () => { selectedCard = 1; applyCardSelection(); },
+      up:    () => { selectedCard = 0; applyCardSelection(); },
+      down:  () => { selectedCard = 1; applyCardSelection(); },
+      confirm: () => {
+        if (selectedCard === 0) {
+          const result = jugar(carpeta, archivo);
+          if (result && !result.success && result.error === 'already_running') {
+            showToast('Ya hay un juego en ejecución. Ciérralo primero (Select+Start).');
+          }
+        } else {
+          window.location.href = 'MultiplayerLobby.html' + window.location.search;
+        }
+      },
+      back: () => {
+        window.location.href = 'mainLobby.html';
+      }
+    });
   </script>
 
 </body>

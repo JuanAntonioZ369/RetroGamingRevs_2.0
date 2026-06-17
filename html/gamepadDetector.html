@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html class="dark" lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Detector de Mando — GamingRevs</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Spline+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: { "primary": "#0d33f2", "background-dark": "#101322" },
+          fontFamily: { "display": ["Spline Sans"] }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Spline Sans', sans-serif; }
+    .btn-circle {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      transition: all 0.1s;
+      border: 2px solid rgba(13,51,242,0.3);
+      background: rgba(255,255,255,0.05);
+      color: #94a3b8;
+    }
+    .btn-circle.pressed {
+      background: #0d33f2;
+      border-color: #0d33f2;
+      color: white;
+      box-shadow: 0 0 16px rgba(13,51,242,0.7);
+      transform: scale(0.92);
+    }
+    .dpad-btn {
+      width: 40px; height: 40px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,0.05);
+      border: 2px solid rgba(13,51,242,0.3);
+      color: #94a3b8;
+      transition: all 0.1s;
+    }
+    .dpad-btn.pressed {
+      background: #0d33f2;
+      border-color: #0d33f2;
+      color: white;
+      box-shadow: 0 0 12px rgba(13,51,242,0.6);
+    }
+    .axis-bar-track {
+      background: rgba(255,255,255,0.08);
+      border-radius: 99px;
+      overflow: hidden;
+      height: 8px;
+    }
+    .axis-bar-fill {
+      height: 100%;
+      background: #0d33f2;
+      border-radius: 99px;
+      transition: width 0.05s, margin-left 0.05s;
+    }
+  </style>
+</head>
+
+<body class="bg-background-dark text-slate-200 min-h-screen">
+
+  <!-- Header -->
+  <header class="border-b border-primary/10 px-8 py-5 flex items-center gap-4">
+    <button onclick="window.location.href='mainLobby.html'" class="p-2 rounded-xl text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors">
+      <span class="material-icons-round">arrow_back</span>
+    </button>
+    <h1 class="text-xl font-bold text-white">Detector de <span class="text-primary">Mando</span></h1>
+    <div id="connection-badge" class="ml-auto flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-red-500/10 text-red-400">
+      <span class="w-2 h-2 rounded-full bg-red-500"></span>
+      Sin mando
+    </div>
+  </header>
+
+  <main class="p-8 max-w-4xl mx-auto space-y-8">
+
+    <!-- Last button pressed -->
+    <div class="bg-slate-800/50 rounded-2xl p-6 border border-primary/10">
+      <p class="text-xs uppercase tracking-widest text-slate-500 mb-2">Último botón presionado</p>
+      <div id="last-button" class="text-3xl font-bold text-white">—</div>
+      <div id="last-button-idx" class="text-sm text-slate-400 mt-1">Índice: —</div>
+    </div>
+
+    <!-- Face buttons + D-Pad layout -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <!-- D-Pad -->
+      <div class="bg-slate-800/50 rounded-2xl p-6 border border-primary/10">
+        <p class="text-xs uppercase tracking-widest text-slate-500 mb-6">D-Pad</p>
+        <div class="flex justify-center">
+          <div class="grid grid-cols-3 gap-1" style="width:132px">
+            <div></div>
+            <div class="dpad-btn rounded-t-lg" id="btn-12"><span class="material-icons-round text-lg">keyboard_arrow_up</span></div>
+            <div></div>
+            <div class="dpad-btn rounded-l-lg" id="btn-14"><span class="material-icons-round text-lg">keyboard_arrow_left</span></div>
+            <div class="dpad-btn" style="background:rgba(255,255,255,0.03)"></div>
+            <div class="dpad-btn rounded-r-lg" id="btn-15"><span class="material-icons-round text-lg">keyboard_arrow_right</span></div>
+            <div></div>
+            <div class="dpad-btn rounded-b-lg" id="btn-13"><span class="material-icons-round text-lg">keyboard_arrow_down</span></div>
+            <div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Face buttons (ABXY / Cruz-Círculo-Cuadrado-Triángulo) -->
+      <div class="bg-slate-800/50 rounded-2xl p-6 border border-primary/10">
+        <p class="text-xs uppercase tracking-widest text-slate-500 mb-6">Botones de Acción</p>
+        <div class="flex justify-center">
+          <div class="grid grid-cols-3 gap-2" style="width:156px">
+            <div></div>
+            <div class="btn-circle" id="btn-3" title="Y/Triángulo">Y</div>
+            <div></div>
+            <div class="btn-circle" id="btn-2" title="X/Cuadrado">X</div>
+            <div></div>
+            <div class="btn-circle" id="btn-1" title="B/Círculo">B</div>
+            <div></div>
+            <div class="btn-circle" id="btn-0" title="A/Cruz">A</div>
+            <div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- System buttons -->
+    <div class="bg-slate-800/50 rounded-2xl p-6 border border-primary/10">
+      <p class="text-xs uppercase tracking-widest text-slate-500 mb-4">Botones de Sistema</p>
+      <div class="flex flex-wrap gap-3">
+        <div class="btn-circle w-auto px-4 rounded-xl text-xs" id="btn-8">SELECT</div>
+        <div class="btn-circle w-auto px-4 rounded-xl text-xs" id="btn-9">START</div>
+        <div class="btn-circle w-auto px-4 rounded-xl text-xs" id="btn-10">L3</div>
+        <div class="btn-circle w-auto px-4 rounded-xl text-xs" id="btn-11">R3</div>
+        <div class="btn-circle w-auto px-4 rounded-xl text-xs" id="btn-4">L1</div>
+        <div class="btn-circle w-auto px-4 rounded-xl text-xs" id="btn-5">R1</div>
+        <div class="btn-circle w-auto px-4 rounded-xl text-xs" id="btn-6">L2</div>
+        <div class="btn-circle w-auto px-4 rounded-xl text-xs" id="btn-7">R2</div>
+      </div>
+    </div>
+
+    <!-- Axes -->
+    <div class="bg-slate-800/50 rounded-2xl p-6 border border-primary/10">
+      <p class="text-xs uppercase tracking-widest text-slate-500 mb-4">Ejes Analógicos</p>
+      <div class="space-y-4" id="axes-container">
+        <p class="text-slate-500 text-sm">Conecta un mando para ver los ejes.</p>
+      </div>
+    </div>
+
+    <!-- All buttons raw -->
+    <div class="bg-slate-800/50 rounded-2xl p-6 border border-primary/10">
+      <p class="text-xs uppercase tracking-widest text-slate-500 mb-4">Todos los botones (raw)</p>
+      <div id="raw-buttons" class="flex flex-wrap gap-2 text-xs">
+        <p class="text-slate-500">Esperando mando...</p>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const BUTTON_NAMES = {
+      0:'A/Cruz', 1:'B/Círculo', 2:'X/Cuadrado', 3:'Y/Triángulo',
+      4:'L1', 5:'R1', 6:'L2', 7:'R2',
+      8:'Select/Share', 9:'Start/Options', 10:'L3', 11:'R3',
+      12:'D-Pad ↑', 13:'D-Pad ↓', 14:'D-Pad ←', 15:'D-Pad →'
+    };
+
+    let rafId = null;
+
+    function updateBadge(connected, name) {
+      const badge = document.getElementById('connection-badge');
+      if (connected) {
+        badge.className = 'ml-auto flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-green-500/10 text-green-400';
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-green-500"></span>${name || 'Mando conectado'}`;
+      } else {
+        badge.className = 'ml-auto flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-red-500/10 text-red-400';
+        badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-red-500"></span>Sin mando';
+      }
+    }
+
+    function buildAxes(count) {
+      const container = document.getElementById('axes-container');
+      container.innerHTML = '';
+      const AXIS_NAMES = ['Izq. X', 'Izq. Y', 'Der. X', 'Der. Y'];
+      for (let i = 0; i < count; i++) {
+        const label = AXIS_NAMES[i] || `Eje ${i}`;
+        container.innerHTML += `
+          <div>
+            <div class="flex justify-between text-xs text-slate-400 mb-1">
+              <span>${label}</span>
+              <span id="axis-val-${i}">0.00</span>
+            </div>
+            <div class="axis-bar-track">
+              <div id="axis-bar-${i}" class="axis-bar-fill" style="width:50%;margin-left:50%"></div>
+            </div>
+          </div>`;
+      }
+    }
+
+    function buildRawButtons(count) {
+      const container = document.getElementById('raw-buttons');
+      container.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        container.innerHTML += `<div id="raw-btn-${i}" class="px-2 py-1 rounded bg-slate-700 text-slate-400">${i}</div>`;
+      }
+    }
+
+    function loop() {
+      const gamepads = Array.from(navigator.getGamepads ? navigator.getGamepads() : []).filter(Boolean);
+      if (gamepads.length === 0) { rafId = requestAnimationFrame(loop); return; }
+
+      const gp = gamepads[0];
+
+      // Buttons
+      let anyPressed = false;
+      gp.buttons.forEach((btn, i) => {
+        const el = document.getElementById(`btn-${i}`);
+        const raw = document.getElementById(`raw-btn-${i}`);
+        if (btn.pressed) {
+          anyPressed = true;
+          el && el.classList.add('pressed');
+          if (raw) { raw.className = 'px-2 py-1 rounded bg-primary text-white font-bold'; }
+          document.getElementById('last-button').textContent = BUTTON_NAMES[i] || `Botón ${i}`;
+          document.getElementById('last-button-idx').textContent = `Índice: ${i}`;
+        } else {
+          el && el.classList.remove('pressed');
+          if (raw) { raw.className = 'px-2 py-1 rounded bg-slate-700 text-slate-400'; }
+        }
+      });
+
+      // Axes
+      gp.axes.forEach((val, i) => {
+        const valEl = document.getElementById(`axis-val-${i}`);
+        const barEl = document.getElementById(`axis-bar-${i}`);
+        if (!valEl) return;
+        valEl.textContent = val.toFixed(2);
+        // Center = 50%, map [-1,1] → bar width + margin
+        const pct = Math.abs(val) * 50;
+        if (val >= 0) {
+          barEl.style.width = pct + '%';
+          barEl.style.marginLeft = '50%';
+        } else {
+          barEl.style.width = pct + '%';
+          barEl.style.marginLeft = (50 - pct) + '%';
+        }
+      });
+
+      rafId = requestAnimationFrame(loop);
+    }
+
+    window.addEventListener('gamepadconnected', (e) => {
+      updateBadge(true, e.gamepad.id.substring(0, 40));
+      buildAxes(e.gamepad.axes.length);
+      buildRawButtons(e.gamepad.buttons.length);
+      if (!rafId) loop();
+    });
+
+    window.addEventListener('gamepaddisconnected', () => {
+      const remaining = Array.from(navigator.getGamepads()).filter(Boolean);
+      if (remaining.length === 0) {
+        updateBadge(false);
+        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+      }
+    });
+
+    // Detect already-connected gamepads
+    const existing = Array.from(navigator.getGamepads ? navigator.getGamepads() : []).filter(Boolean);
+    if (existing.length > 0) {
+      updateBadge(true, existing[0].id.substring(0, 40));
+      buildAxes(existing[0].axes.length);
+      buildRawButtons(existing[0].buttons.length);
+      loop();
+    }
+
+    // Gamepad navigation: B/Círculo o Select → volver al lobby
+    const { initGamepad } = require('./gamepadSupport');
+    initGamepad({
+      back: () => { window.location.href = 'mainLobby.html'; },
+      select: () => { window.location.href = 'mainLobby.html'; },
+      start: () => { window.location.href = 'mainLobby.html'; }
+    });
+  </script>
+</body>
+</html>
