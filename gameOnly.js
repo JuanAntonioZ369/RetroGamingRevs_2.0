@@ -67,9 +67,9 @@ function jugar(carpeta, archivo) {
   // Todo lo demás (PS1, nombre de juego suelto, etc.) usa mednafen
   const sistema = carpeta.split(/[/\\]/)[0].toUpperCase()
   if (CORE_MAP[sistema]) {
-    jugarRetroArch(carpeta, archivo, sistema)
+    return jugarRetroArch(carpeta, archivo, sistema)
   } else {
-    jugarMednafen(carpeta, archivo)
+    return jugarMednafen(carpeta, archivo)
   }
 }
 
@@ -238,7 +238,7 @@ async function conectarSalaMednafen(gamekey, carpeta, archivo) {
 }
 
 async function obtenerSalas() {
-  const res = await fetch('http://lobby.libretro.com/list/')
+  const res = await fetch('https://lobby.libretro.com/list/')
   const data = await res.json()
   return data
 }
@@ -285,9 +285,15 @@ async function conectarSala(codigo, carpeta, archivo) {
     game
   ]
 
-  const proc = spawn(retroarch, args, { detached: false, stdio: 'inherit', cwd: retroarchDir })
+  const proc = spawn(retroarch, args, { detached: true, stdio: 'ignore', cwd: retroarchDir })
+  currentGameProcess = proc
+  updatePresence(archivo).catch(() => {})
   proc.on('error', (err) => console.error('Error spawn RetroArch:', err.message))
-  proc.on('close', (code) => console.log('RetroArch cerró con código:', code))
+  proc.on('close', () => {
+    if (currentGameProcess === proc) currentGameProcess = null
+    setOffline().catch(() => {})
+    uploadSaves(archivo.replace('.cue', ''), 'retroarch').catch(() => {})
+  })
   proc.unref()
 }
 
@@ -323,7 +329,11 @@ async function startNetplay({ mode, ip, port, romPath }) {
   }
 
   const retroarch = spawn(retroarchPath, args, { detached: true, stdio: 'ignore' })
-  retroarch.on('close', (code) => console.log('RetroArch cerró con código:', code))
+  currentGameProcess = retroarch
+  retroarch.on('close', () => {
+    if (currentGameProcess === retroarch) currentGameProcess = null
+    setOffline().catch(() => {})
+  })
   retroarch.on('error', (err) => console.error('Error spawn:', err.message))
   retroarch.unref()
 

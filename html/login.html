@@ -400,6 +400,7 @@
     const { loginUser, registerUser, getSession } = require('../supabaseAuth');
     const { ipcRenderer } = require('electron');
     const { setLocalNick, setGuest, isGuest, IS_BETA } = require('../userConfig');
+    const { setNickName } = require('../status');
 
     // ── Verificar estado de app al iniciar ───────────────────────────
     ;(async () => {
@@ -503,6 +504,7 @@
       setLoading('login', true);
       try {
         await loginUser(email, password);
+        setGuest(false); // limpiar flag invitado si antes entró como tal
         window.location.href = 'mainLobby.html';
       } catch (err) {
         showError('login', err.message || 'No se pudo iniciar sesión. Verifica tus credenciales.');
@@ -542,6 +544,10 @@
           el.querySelector('span.material-icons-round').textContent = 'mark_email_read';
           el.className = el.className.replace('text-red-400', 'text-green-400');
         } else {
+          // Guardar username localmente y entrar directo
+          setLocalNick(username);
+          setNickName(username);
+          setGuest(false);
           window.location.href = 'mainLobby.html';
         }
       } catch (err) {

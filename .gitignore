@@ -27,7 +27,10 @@ Emuladores/mednafen-1.32.1-win64/snaps/
 # ── Configuración local del usuario ──────────────────────────────
 userData.json
 
-# ── Herramienta Claude (sesiones locales) ────────────────────────
+# ── Credenciales y configuración sensible ────────────────────────
+supabaseConfig.js
+
+# ── Claude Code (configuración local del IDE) ─────────────────────
 .claude/
 
 # ── Documentos de referencia (no son parte de la app) ────────────

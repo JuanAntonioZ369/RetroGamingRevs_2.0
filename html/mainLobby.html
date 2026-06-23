@@ -535,6 +535,9 @@
     const { ipcRenderer } = require('electron');
     const { initGamepad } = require('./gamepadSupport');
 
+    // Versión dinámica desde package.json
+    try { document.getElementById('version-label').textContent = 'v' + require('../package.json').version; } catch(_) {}
+
     // ── Helpers de Supabase (lazy — solo se cargan si están disponibles) ──
     function safeRequireAuth()    { try { return require('../supabaseAuth'); }    catch(e) { return null; } }
     function safeRequireFriends() { try { return require('../friendsManager'); } catch(e) { return null; } }
@@ -727,7 +730,7 @@
     }
 
     function playGame(romPath, title) {
-      window.location.href = 'gameModeSelection.html?game=' + encodeURIComponent(romPath) + '&title=' + encodeURIComponent(title);
+      window.location.href = 'GameModeSelection.html?game=' + encodeURIComponent(romPath) + '&title=' + encodeURIComponent(title);
     }
 
     // Search — filtra carpetas en root, juegos dentro de carpeta
@@ -774,8 +777,14 @@
           document.getElementById('guest-badge')?.classList.remove('hidden');
         }
 
-        // Nickname siempre desde JSON local
+        // Nickname: primero desde JSON local, si no hay tomar de Supabase
         let nick = getLocalNick();
+
+        if (!nick && myProfile?.username) {
+          // PC nueva o userData.json vacío: restaurar desde la cuenta
+          nick = myProfile.username;
+          setLocalNick(nick);
+        }
 
         if (!nick) {
           document.getElementById('firsttime-modal').classList.remove('hidden');
@@ -892,8 +901,8 @@
             <div class="flex items-center gap-2 p-2 bg-slate-800 rounded-lg">
               <div class="w-7 h-7 rounded-lg bg-primary/20 flex items-center justify-center text-primary text-xs font-bold">${escHTML((p.requester?.username||'?')[0].toUpperCase())}</div>
               <span class="flex-1 text-sm text-white truncate">${escHTML(p.requester?.username||'???')}</span>
-              <button onclick="doAcceptFriend('${p.id}')" class="text-green-400"><span class="material-icons-round text-sm">check</span></button>
-              <button onclick="doRemoveFriend('${p.id}')" class="text-red-400"><span class="material-icons-round text-sm">close</span></button>
+              <button onclick="doAcceptFriend('${escHTML(p.id)}')" class="text-green-400"><span class="material-icons-round text-sm">check</span></button>
+              <button onclick="doRemoveFriend('${escHTML(p.id)}')" class="text-red-400"><span class="material-icons-round text-sm">close</span></button>
             </div>`).join('');
         } else {
           badge.classList.add('hidden');
@@ -964,10 +973,18 @@
     }
     async function joinInvitation(inv) {
       const fm = safeRequireFriends();
-      if (fm) await fm.acceptInvitation(inv.id);
+      if (fm) {
+        await fm.acceptInvitation(inv.id);
+        // Auto-agregar como amigo si el receptor es usuario registrado (no invitado)
+        if (!isGuest() && inv.from_user_id) {
+          fm.autoAddFriend(inv.from_user_id).catch(() => {});
+        }
+      }
       dismissInvitation();
+      if (!inv.game_path || !inv.gamekey) return;
       const { conectarSalaMednafen } = require('../gameOnly');
       const s = inv.game_path.lastIndexOf('/');
+      if (s === -1) return;
       await conectarSalaMednafen(inv.gamekey, inv.game_path.substring(0,s), inv.game_path.substring(s+1));
     }
     function dismissInvitation() {
@@ -1233,11 +1250,12 @@
               <span>Regístrate para acceder al link de descarga de juegos.</span>
             </div>`;
         } else if (url) {
-          container.innerHTML = `
-            <a onclick="ipcRenderer.invoke('open-external','${url.replace(/'/g,"\\'")}')" class="flex items-center gap-2 text-xs text-primary hover:text-primary/80 cursor-pointer font-medium transition-colors">
-              <span class="material-icons-round text-sm">cloud_download</span>
-              Descargar juegos (Drive)
-            </a>`;
+          const gamesLink = document.createElement('a');
+          gamesLink.className = 'flex items-center gap-2 text-xs text-primary hover:text-primary/80 cursor-pointer font-medium transition-colors';
+          gamesLink.innerHTML = '<span class="material-icons-round text-sm">cloud_download</span> Descargar juegos (Drive)';
+          gamesLink.addEventListener('click', () => ipcRenderer.invoke('open-external', url));
+          container.innerHTML = '';
+          container.appendChild(gamesLink);
         } else {
           container.innerHTML = `<p class="text-xs text-slate-500">Link de juegos no disponible aún.</p>`;
         }

@@ -1,6 +1,6 @@
 {
   "name": "gamingrevs",
-  "version": "1.0.0",
+  "version": "0.84",
   "description": "GamingRevs — Launcher de PS1 con netplay",
   "author": "AntonioPCGamer",
   "main": "main.js",
@@ -47,7 +47,12 @@
       "!**/*.sql",
       "!**/*.docx",
       "!.claude/**",
-      "!dist/**"
+      "!dist/**",
+      "!CLAUDE.md",
+      "!installer.nsh",
+      "!run.bat",
+      "!cfgigual.txt",
+      "!*.md"
     ],
     "win": {
       "target": [
@@ -62,9 +67,11 @@
     },
     "nsis": {
       "oneClick": false,
+      "perMachine": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "shortcutName": "GamingRevs"
+      "shortcutName": "GamingRevs",
+      "include": "installer.nsh"
     },
     "publish": [
       {
@@ -74,5 +81,9 @@
         "releaseType": "release"
       }
     ]
+  },
+  "allowScripts": {
+    "electron-winstaller@5.4.0": true,
+    "electron@25.9.8": true
   }
 }

@@ -267,8 +267,15 @@ function setNetplayServer(host, port) {
 
     const useCustom = !!(host && host.trim())
     const mitmServer  = useCustom ? 'custom' : 'saopaulo'
-    const customHost  = useCustom ? host.trim() : ''
-    const mitmPort    = (port && port.trim()) ? port.trim() : '55435'
+    // Validar host: solo caracteres válidos para IP/hostname
+    const rawHost = useCustom ? host.trim() : ''
+    const customHost = /^[a-zA-Z0-9.\-]+$/.test(rawHost) ? rawHost : ''
+    if (useCustom && !customHost) {
+      return { ok: false, error: 'Host inválido' }
+    }
+    // Validar port: solo dígitos, 1-65535
+    const rawPort = (port && port.trim()) ? port.trim() : '55435'
+    const mitmPort = /^\d{1,5}$/.test(rawPort) && parseInt(rawPort) <= 65535 ? rawPort : '55435'
 
     // Helper: reemplaza o agrega una clave en el cfg
     function setCfgKey(key, value) {
@@ -295,7 +302,7 @@ function setNetplayServer(host, port) {
 
 // ─── 11. ID ───
 async function obtenerSalas() {
-  const res = await fetch('http://lobby.libretro.com/list/')
+  const res = await fetch('https://lobby.libretro.com/list/')
   const data = await res.json()
   return data
 }
@@ -310,7 +317,9 @@ async function getID() {
 
   const miSala = salas.find(s =>
     s.fields.username === nick &&
+    emulador.juego &&
     (s.fields.game_name.includes(emulador.juego) || emulador.juego.includes(s.fields.game_name)) &&
+    emulador.crc32 &&
     s.fields.game_crc.toLowerCase() === emulador.crc32.toLowerCase()
   )
 

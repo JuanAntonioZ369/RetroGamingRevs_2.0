@@ -38,6 +38,42 @@ async function acceptFriendRequest(friendshipId) {
   return { ok: true }
 }
 
+/**
+ * Auto-agregar como amigo al aceptar una invitación de juego.
+ * - Si ya son amigos (accepted) → no hace nada.
+ * - Si hay una solicitud pendiente del otro → la acepta.
+ * - Si no hay relación → crea amistad directamente como accepted.
+ */
+async function autoAddFriend(otherUserId) {
+  const { data: me } = await supabase.auth.getUser()
+  if (!me.user) return { ok: false, error: 'No autenticado' }
+  const uid = me.user.id
+
+  // Buscar si ya existe alguna relación entre los dos
+  const { data: existing } = await supabase
+    .from('friendships')
+    .select('id, status, requester_id')
+    .or(`and(requester_id.eq.${uid},addressee_id.eq.${otherUserId}),and(requester_id.eq.${otherUserId},addressee_id.eq.${uid})`)
+    .maybeSingle()
+
+  if (existing) {
+    if (existing.status === 'accepted') return { ok: true, already: true }
+    // Hay solicitud pendiente — aceptarla
+    const { error } = await supabase.from('friendships').update({ status: 'accepted' }).eq('id', existing.id)
+    if (error) return { ok: false, error: error.message }
+    return { ok: true }
+  }
+
+  // No hay relación — crear amistad aceptada directamente
+  const { error } = await supabase.from('friendships').insert({
+    requester_id: uid,
+    addressee_id: otherUserId,
+    status: 'accepted'
+  })
+  if (error) return { ok: false, error: error.message }
+  return { ok: true }
+}
+
 /** Rechazar / eliminar amistad */
 async function removeFriend(friendshipId) {
   const { error } = await supabase.from('friendships').delete().eq('id', friendshipId)
@@ -261,6 +297,7 @@ module.exports = {
   searchUser,
   sendFriendRequest,
   acceptFriendRequest,
+  autoAddFriend,
   removeFriend,
   getFriends,
   getPendingRequests,

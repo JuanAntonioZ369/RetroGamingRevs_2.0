@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, Menu, shell, protocol, session } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu, shell, session } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 const fs = require('fs');
@@ -22,7 +22,7 @@ function createWindow() {
 
   // Quitar barra de menú nativa (File Edit View Window Help)
   Menu.setApplicationMenu(null);
-  mainWindow.loadURL('app://gamingrevs/html/login.html');
+  mainWindow.loadFile(path.join(__dirname, 'html', 'login.html'));
 }
 
 // ─── Detectar en qué página estamos ───
@@ -96,12 +96,6 @@ function getGamesList() {
 }
 
 app.whenReady().then(() => {
-  // ─── Tarea 1: Protocolo app:// ───
-  protocol.registerFileProtocol('app', (request, callback) => {
-    const url = request.url.replace('app://gamingrevs/', '');
-    callback({ path: path.join(__dirname, decodeURIComponent(url)) });
-  });
-
   createWindow();
 
   // ─── Tarea 2: Security Headers ───
@@ -116,7 +110,7 @@ app.whenReady().then(() => {
           " font-src 'self' https://fonts.gstatic.com;" +
           " connect-src 'self'" +
             " https://*.supabase.co wss://*.supabase.co" +   // Supabase API + Realtime
-            " http://lobby.libretro.com https://lobby.libretro.com" + // Netplay lobby (http)
+            " https://lobby.libretro.com" +                          // Netplay lobby
             " https://buildbot.libretro.com" +               // Cores download
             " https://archive.org https://*.archive.org" +   // BIOS download
             " https:;" +                                     // Cualquier otra descarga HTTPS (BIOS custom URL)
@@ -150,6 +144,12 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
+
+function isTrustedSender(event) {
+  const url = event.senderFrame?.url || '';
+  // Acepta file:// (desarrollo y producción con loadFile)
+  return url.startsWith('file:///');
+}
 
 ipcMain.handle('request-games', async () => {
   return getGamesList();
@@ -211,6 +211,13 @@ ipcMain.handle('check-app-status', async () => {
 });
 
 ipcMain.handle('download-bios', async (event, { url, filename }) => {
+  if (!isTrustedSender(event)) return { ok: false, error: 'Origen no autorizado' };
+  if (typeof filename !== 'string' || !/^[a-zA-Z0-9_\-\.]+$/.test(filename) || filename.includes('..')) {
+    return { ok: false, error: 'Filename inválido' };
+  }
+  if (typeof url !== 'string' || !/^https?:\/\/.+/.test(url)) {
+    return { ok: false, error: 'URL inválida' };
+  }
   const https = require('https');
   const http = require('http');
   // Destinos: mednafen firmware + RetroArch system
@@ -270,6 +277,7 @@ ipcMain.handle('get-cores-status', async () => {
 });
 
 ipcMain.handle('download-core', async (event, dll) => {
+  if (!isTrustedSender(event)) return { ok: false, error: 'Origen no autorizado' };
   // Validar que el dll está en la lista permitida
   const allowed = AVAILABLE_CORES.find(c => c.dll === dll);
   if (!allowed) return { ok: false, error: 'Core no permitido' };
@@ -284,6 +292,7 @@ ipcMain.handle('download-core', async (event, dll) => {
 });
 
 ipcMain.handle('start-netplay', async (event, params) => {
+  if (!isTrustedSender(event)) return { success: false, error: 'Origen no autorizado' }
   if (!params || typeof params !== 'object') return { success: false, error: 'Params inválidos' }
   const { mode, ip, port, romPath } = params
   if (!['host', 'client'].includes(mode)) return { success: false, error: 'Mode inválido' }
