@@ -226,6 +226,11 @@
             />
           </div>
         </div>
+        <button onclick="openQuickJoin()"
+          class="flex-shrink-0 flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary/80 text-white text-sm font-bold rounded-xl transition-colors ml-4">
+          <span class="material-icons-round text-base">login</span>
+          Unirse a partida
+        </button>
       </header>
 
       <!-- Game Grid Section -->
@@ -527,6 +532,62 @@
   </div>
 
  <!---------------- SCRIP  ----------------->
+
+  <!-- ══════════ QUICK JOIN MODAL ══════════ -->
+  <div id="quickjoin-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+    <div class="bg-slate-900 border border-primary/20 rounded-2xl p-7 w-full max-w-md shadow-2xl mx-4">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="font-bold text-white text-lg flex items-center gap-2">
+          <span class="material-icons-round text-primary">sports_esports</span>
+          Unirse a partida
+        </h3>
+        <button onclick="closeQuickJoin()" class="text-slate-400 hover:text-white transition-colors">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+
+      <!-- Código -->
+      <div class="mb-5">
+        <label class="text-xs text-slate-400 uppercase tracking-widest font-bold mb-2 block">Código de sala</label>
+        <input id="qj-code" type="text" maxlength="8" placeholder="XXXXXXXX"
+          class="w-full bg-slate-800 border border-slate-700 focus:border-primary focus:outline-none rounded-xl px-4 py-3 text-white text-center text-2xl font-mono tracking-widest uppercase" />
+      </div>
+
+      <!-- Juego -->
+      <div class="mb-5">
+        <label class="text-xs text-slate-400 uppercase tracking-widest font-bold mb-2 block">Juego</label>
+        <div class="flex gap-2">
+          <select id="qj-game-select"
+            class="flex-1 bg-slate-800 border border-slate-700 focus:border-primary focus:outline-none rounded-xl px-4 py-3 text-white text-sm">
+            <option value="">-- Seleccionar de biblioteca --</option>
+          </select>
+          <button onclick="browseQjGame()" title="Buscar .cue en mi PC"
+            class="px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-slate-300 hover:text-white transition-colors">
+            <span class="material-icons-round text-base">folder_open</span>
+          </button>
+        </div>
+        <p id="qj-game-path" class="hidden text-xs text-slate-400 mt-1.5 truncate pl-1"></p>
+      </div>
+
+      <!-- Estado BIOS -->
+      <div id="qj-bios-status" class="mb-5 p-3 rounded-xl bg-slate-800 flex items-center gap-3">
+        <span class="material-icons-round text-slate-400 text-base animate-spin">sync</span>
+        <span class="text-xs text-slate-400">Verificando BIOS...</span>
+      </div>
+
+      <!-- Error -->
+      <p id="qj-error" class="hidden text-red-400 text-xs mb-4 flex items-center gap-1">
+        <span class="material-icons-round text-sm">error_outline</span>
+        <span id="qj-error-text"></span>
+      </p>
+
+      <!-- Botón unirse -->
+      <button id="qj-join-btn" onclick="doQuickJoin()"
+        class="w-full py-3 bg-primary hover:bg-primary/80 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm tracking-widest uppercase transition-colors">
+        Unirse
+      </button>
+    </div>
+  </div>
 
   <script>
     // ── Requires seguros (no fallan) ──────────────────────────────
@@ -1261,6 +1322,116 @@
         }
       } catch(e) {
         container.innerHTML = `<p class="text-xs text-slate-500">No se pudo cargar el link.</p>`;
+      }
+    }
+
+    // ── Quick Join ────────────────────────────────────────────────
+    let qjAbsolutePath = null;
+
+    function openQuickJoin() {
+      qjAbsolutePath = null;
+      document.getElementById('qj-code').value = '';
+      document.getElementById('qj-game-path').classList.add('hidden');
+      document.getElementById('qj-error').classList.add('hidden');
+      document.getElementById('qj-join-btn').disabled = false;
+      document.getElementById('qj-join-btn').textContent = 'Unirse';
+
+      // Poblar dropdown con juegos de la biblioteca
+      const sel = document.getElementById('qj-game-select');
+      sel.innerHTML = '<option value="">-- Seleccionar de biblioteca --</option>';
+      allFolders.forEach(folder => {
+        folder.games.forEach(game => {
+          const opt = document.createElement('option');
+          opt.value = game.romPath;
+          opt.textContent = game.title;
+          sel.appendChild(opt);
+        });
+      });
+
+      checkQjBios();
+      document.getElementById('quickjoin-modal').classList.remove('hidden');
+      setTimeout(() => document.getElementById('qj-code').focus(), 50);
+    }
+
+    function closeQuickJoin() {
+      document.getElementById('quickjoin-modal').classList.add('hidden');
+    }
+
+    async function checkQjBios() {
+      const statusEl = document.getElementById('qj-bios-status');
+      try {
+        const { ok } = await ipcRenderer.invoke('check-bios');
+        if (ok) {
+          statusEl.innerHTML = `
+            <span class="material-icons-round text-green-400 text-base">check_circle</span>
+            <span class="text-xs text-green-400 flex-1">BIOS instaladas</span>`;
+        } else {
+          statusEl.innerHTML = `
+            <span class="material-icons-round text-amber-400 text-base">warning</span>
+            <span class="text-xs text-amber-400 flex-1">Faltan archivos BIOS — los juegos no abrirán sin ellos</span>
+            <button onclick="downloadBios(); closeQuickJoin();" class="flex-shrink-0 text-xs bg-amber-500 hover:bg-amber-400 text-black font-bold px-3 py-1 rounded-lg transition-colors">Descargar</button>`;
+        }
+      } catch(e) {
+        statusEl.innerHTML = `<span class="text-xs text-slate-500">No se pudo verificar BIOS</span>`;
+      }
+    }
+
+    async function browseQjGame() {
+      const filePath = await ipcRenderer.invoke('choose-cue-file');
+      if (!filePath) return;
+      qjAbsolutePath = filePath;
+      document.getElementById('qj-game-select').value = '';
+      const pathEl = document.getElementById('qj-game-path');
+      pathEl.textContent = '📁 ' + filePath;
+      pathEl.classList.remove('hidden');
+    }
+
+    async function doQuickJoin() {
+      const code = document.getElementById('qj-code').value.trim().toUpperCase();
+      const errEl = document.getElementById('qj-error');
+      const errText = document.getElementById('qj-error-text');
+      errEl.classList.add('hidden');
+
+      if (!code) {
+        errText.textContent = 'Ingresa el código de sala';
+        errEl.classList.remove('hidden'); return;
+      }
+      const selectVal = document.getElementById('qj-game-select').value;
+      if (!selectVal && !qjAbsolutePath) {
+        errText.textContent = 'Selecciona el juego de tu biblioteca o búscalo en tu PC';
+        errEl.classList.remove('hidden'); return;
+      }
+
+      const btn = document.getElementById('qj-join-btn');
+      btn.disabled = true;
+      btn.textContent = 'Conectando...';
+
+      try {
+        let result;
+        if (qjAbsolutePath) {
+          const { conectarSalaMednafenAbsoluto } = require('../gameOnly');
+          result = await conectarSalaMednafenAbsoluto(code, qjAbsolutePath);
+        } else {
+          const { conectarSalaMednafen } = require('../gameOnly');
+          const s = selectVal.lastIndexOf('/');
+          const carpeta = s !== -1 ? selectVal.substring(0, s) : '';
+          const archivo = s !== -1 ? selectVal.substring(s + 1) : selectVal;
+          result = await conectarSalaMednafen(code, carpeta, archivo);
+        }
+
+        if (result && result.success) {
+          closeQuickJoin();
+          ipcRenderer.invoke('minimize-window');
+        } else {
+          errText.textContent = (result && result.error) || 'No se pudo conectar';
+          errEl.classList.remove('hidden');
+        }
+      } catch(e) {
+        errText.textContent = e.message;
+        errEl.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Unirse';
       }
     }
 

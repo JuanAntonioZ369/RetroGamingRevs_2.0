@@ -383,4 +383,52 @@ async function jugarMultijugador4(carpeta, archivo) {
   return { success: true, gamekey }
 }
 
-module.exports = { jugar, jugarMultijugador, jugarMultijugador4, conectarSala, conectarSalaMednafen, startNetplay, killCurrentGame, isGameRunning }
+// Unirse a una sala con ruta absoluta (para juegos fuera de la carpeta games/)
+async function conectarSalaMednafenAbsoluto(gamekey, absoluteGamePath) {
+  if (currentGameProcess) {
+    return { success: false, error: 'already_running' }
+  }
+  if (!/^[A-Z0-9]{1,8}$/i.test(gamekey)) {
+    return { success: false, error: 'Gamekey inválido' }
+  }
+  if (!fs.existsSync(absoluteGamePath)) {
+    return { success: false, error: 'Archivo de juego no encontrado' }
+  }
+  const base = __dirname
+  const mednafenExe = path.join(base, 'Emuladores', 'mednafen-1.32.1-win64', 'mednafen.exe')
+  const mednafenDir = path.join(base, 'Emuladores', 'mednafen-1.32.1-win64')
+  const nick = getNickName() || 'Jugador'
+  const firmwarePath = path.join(base, 'Emuladores', 'mednafen-1.32.1-win64', 'firmware')
+  const { host: netHost, port: netPort } = await getMednafenServer()
+
+  const args = [
+    '-filesys.path_firmware', firmwarePath,
+    '-video.fs', '1',
+    '-connect',
+    '-netplay.host', netHost,
+    '-netplay.port', netPort,
+    '-netplay.nick', nick,
+    '-netplay.gamekey', gamekey,
+    absoluteGamePath
+  ]
+
+  const proc = spawn(mednafenExe, args, {
+    detached: true,
+    stdio: 'ignore',
+    cwd: mednafenDir
+  })
+
+  currentGameProcess = proc
+  const gameTitle = path.basename(absoluteGamePath).replace('.cue', '')
+  updatePresence(gameTitle).catch(() => {})
+  proc.on('error', (err) => console.error('Error spawn mednafen absoluto:', err.message))
+  proc.on('close', async () => {
+    if (currentGameProcess === proc) currentGameProcess = null
+    try { await uploadSaves(gameTitle, 'mednafen') } catch(_) {}
+    try { await setOffline() } catch(_) {}
+  })
+  proc.unref()
+  return { success: true }
+}
+
+module.exports = { jugar, jugarMultijugador, jugarMultijugador4, conectarSala, conectarSalaMednafen, conectarSalaMednafenAbsoluto, startNetplay, killCurrentGame, isGameRunning }

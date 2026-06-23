@@ -223,52 +223,87 @@ ipcMain.handle('download-bios', async (event, { url, filename }) => {
   if (typeof url !== 'string' || !/^https?:\/\/.+/.test(url)) {
     return { ok: false, error: 'URL inválida' };
   }
-  const https = require('https');
-  const http = require('http');
-  // Destinos: mednafen firmware + RetroArch system
+  const { net } = require('electron');
   const dirs = [
     path.join(__dirname, 'Emuladores', 'mednafen-1.32.1-win64', 'firmware'),
     path.join(__dirname, 'Emuladores', 'RetroArch-Win64', 'system')
   ];
   for (const d of dirs) if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
 
-  // Si ya existe en el destino principal, copiar al secundario si falta y salir
   const primary = path.join(dirs[0], filename);
   const secondary = path.join(dirs[1], filename);
-  if (fs.existsSync(primary)) {
-    if (!fs.existsSync(secondary)) fs.copyFileSync(primary, secondary);
+
+  // Si ya existe con tamaño correcto, skip
+  if (fs.existsSync(primary) && fs.statSync(primary).size >= 500000) {
+    if (!fs.existsSync(secondary) || fs.statSync(secondary).size < 500000) {
+      try { fs.copyFileSync(primary, secondary); } catch(_) {}
+    }
     return { ok: true, skipped: true };
   }
 
   return new Promise((resolve) => {
-    const proto = url.startsWith('https') ? https : http;
+    const request = net.request(url);
     const file = fs.createWriteStream(primary);
-    proto.get(url, (res) => {
-      if (res.statusCode !== 200) {
-        file.close();
+    let total = 0;
+    let received = 0;
+
+    request.on('response', (response) => {
+      if (response.statusCode !== 200) {
+        file.destroy();
         fs.unlink(primary, () => {});
-        return resolve({ ok: false, error: `HTTP ${res.statusCode}` });
+        return resolve({ ok: false, error: `HTTP ${response.statusCode}` });
       }
-      const total = parseInt(res.headers['content-length'] || '0', 10);
-      let received = 0;
-      res.on('data', (chunk) => {
+      total = parseInt(response.headers['content-length'] || '0', 10);
+
+      response.on('data', (chunk) => {
         received += chunk.length;
+        file.write(chunk);
         if (total > 0 && mainWindow) {
           mainWindow.webContents.send('bios-download-progress', {
             filename, percent: Math.round((received / total) * 100)
           });
         }
       });
-      res.pipe(file);
-      file.on('finish', () => {
-        file.close();
-        // Copiar también a RetroArch system
-        try { fs.copyFileSync(primary, secondary); } catch(_) {}
-        resolve({ ok: true });
+
+      response.on('end', () => {
+        file.end(() => {
+          try {
+            const stat = fs.statSync(primary);
+            if (stat.size < 500000) {
+              fs.unlink(primary, () => {});
+              return resolve({ ok: false, error: `Archivo incompleto (${stat.size} bytes). La URL de BIOS puede ser incorrecta.` });
+            }
+            try { fs.copyFileSync(primary, secondary); } catch(_) {}
+            resolve({ ok: true });
+          } catch(e) { resolve({ ok: false, error: e.message }); }
+        });
       });
-      file.on('error', (err) => { fs.unlink(primary, () => {}); resolve({ ok: false, error: err.message }); });
-    }).on('error', (err) => { resolve({ ok: false, error: err.message }); });
+
+      response.on('error', (err) => {
+        file.destroy();
+        fs.unlink(primary, () => {});
+        resolve({ ok: false, error: err.message });
+      });
+    });
+
+    request.on('error', (err) => {
+      try { file.destroy(); } catch(_) {}
+      try { fs.unlink(primary, () => {}); } catch(_) {}
+      resolve({ ok: false, error: err.message });
+    });
+
+    request.end();
   });
+});
+
+ipcMain.handle('choose-cue-file', async () => {
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: 'Seleccionar archivo de juego (.cue)',
+    filters: [{ name: 'CUE Sheets', extensions: ['cue'] }],
+    properties: ['openFile']
+  });
+  if (result.canceled || !result.filePaths.length) return null;
+  return result.filePaths[0];
 });
 
 const { AVAILABLE_CORES, getInstalledCores, downloadCore } = require('./coreDownloader');
