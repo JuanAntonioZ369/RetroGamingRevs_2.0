@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, Menu, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu, shell, protocol, session } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 const fs = require('fs');
@@ -22,7 +22,7 @@ function createWindow() {
 
   // Quitar barra de menú nativa (File Edit View Window Help)
   Menu.setApplicationMenu(null);
-  mainWindow.loadFile('html/login.html');
+  mainWindow.loadURL('app://gamingrevs/html/login.html');
 }
 
 // ─── Detectar en qué página estamos ───
@@ -96,7 +96,41 @@ function getGamesList() {
 }
 
 app.whenReady().then(() => {
+  // ─── Tarea 1: Protocolo app:// ───
+  protocol.registerFileProtocol('app', (request, callback) => {
+    const url = request.url.replace('app://gamingrevs/', '');
+    callback({ path: path.join(__dirname, decodeURIComponent(url)) });
+  });
+
   createWindow();
+
+  // ─── Tarea 2: Security Headers ───
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    callback({
+      responseHeaders: {
+        ...details.responseHeaders,
+        'Content-Security-Policy': [
+          "default-src 'self';" +
+          " script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com;" +
+          " style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com;" +
+          " font-src 'self' https://fonts.gstatic.com;" +
+          " connect-src 'self'" +
+            " https://*.supabase.co wss://*.supabase.co" +   // Supabase API + Realtime
+            " http://lobby.libretro.com https://lobby.libretro.com" + // Netplay lobby (http)
+            " https://buildbot.libretro.com" +               // Cores download
+            " https://archive.org https://*.archive.org" +   // BIOS download
+            " https:;" +                                     // Cualquier otra descarga HTTPS (BIOS custom URL)
+          " img-src 'self' data: https:;" +
+          " object-src 'none';" +
+          " frame-ancestors 'none';"
+        ],
+        'X-Content-Type-Options': ['nosniff'],
+        'X-Frame-Options': ['DENY'],
+        'Referrer-Policy': ['no-referrer'],
+        'Permissions-Policy': ['camera=(), microphone=(), geolocation=()']
+      }
+    });
+  });
 
   mainWindow.webContents.on('dom-ready', () => {
     const url = mainWindow.webContents.getURL();
