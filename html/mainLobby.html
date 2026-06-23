@@ -546,33 +546,29 @@
         </button>
       </div>
 
-      <!-- Código -->
+      <!-- Código + Buscar -->
       <div class="mb-5">
         <label class="text-xs text-slate-400 uppercase tracking-widest font-bold mb-2 block">Código de sala</label>
-        <input id="qj-code" type="text" maxlength="8" placeholder="XXXXXXXX"
-          class="w-full bg-slate-800 border border-slate-700 focus:border-primary focus:outline-none rounded-xl px-4 py-3 text-white text-center text-2xl font-mono tracking-widest uppercase" />
-      </div>
-
-      <!-- Juego -->
-      <div class="mb-5">
-        <label class="text-xs text-slate-400 uppercase tracking-widest font-bold mb-2 block">Juego</label>
         <div class="flex gap-2">
-          <select id="qj-game-select"
-            class="flex-1 bg-slate-800 border border-slate-700 focus:border-primary focus:outline-none rounded-xl px-4 py-3 text-white text-sm">
-            <option value="">-- Seleccionar de biblioteca --</option>
-          </select>
-          <button onclick="browseQjGame()" title="Buscar .cue en mi PC"
-            class="px-3 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl text-slate-300 hover:text-white transition-colors">
-            <span class="material-icons-round text-base">folder_open</span>
+          <input id="qj-code" type="text" maxlength="8" placeholder="XXXXXXXX"
+            class="flex-1 bg-slate-800 border border-slate-700 focus:border-primary focus:outline-none rounded-xl px-4 py-3 text-white text-center text-xl font-mono tracking-widest uppercase" />
+          <button onclick="qjLookup()" id="qj-lookup-btn"
+            class="px-4 py-2 bg-primary hover:bg-primary/80 text-white font-bold rounded-xl text-sm transition-colors">
+            Buscar
           </button>
         </div>
-        <p id="qj-game-path" class="hidden text-xs text-slate-400 mt-1.5 truncate pl-1"></p>
       </div>
 
-      <!-- Estado BIOS -->
-      <div id="qj-bios-status" class="mb-5 p-3 rounded-xl bg-slate-800 flex items-center gap-3">
-        <span class="material-icons-round text-slate-400 text-base animate-spin">sync</span>
-        <span class="text-xs text-slate-400">Verificando BIOS...</span>
+      <!-- Panel de estado (oculto hasta buscar) -->
+      <div id="qj-status-panel" class="hidden space-y-2 mb-5">
+        <div id="qj-game-row" class="p-3 rounded-xl bg-slate-800 flex items-center gap-3 min-h-[44px]">
+          <span class="material-icons-round text-slate-500 text-base">videogame_asset</span>
+          <span class="text-xs text-slate-500 flex-1">—</span>
+        </div>
+        <div id="qj-bios-row" class="p-3 rounded-xl bg-slate-800 flex items-center gap-3">
+          <span class="material-icons-round text-slate-500 text-base">memory</span>
+          <span class="text-xs text-slate-500 flex-1">—</span>
+        </div>
       </div>
 
       <!-- Error -->
@@ -582,8 +578,8 @@
       </p>
 
       <!-- Botón unirse -->
-      <button id="qj-join-btn" onclick="doQuickJoin()"
-        class="w-full py-3 bg-primary hover:bg-primary/80 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm tracking-widest uppercase transition-colors">
+      <button id="qj-join-btn" onclick="doQuickJoin()" disabled
+        class="w-full py-3 bg-primary hover:bg-primary/80 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold rounded-xl text-sm tracking-widest uppercase transition-colors">
         Unirse
       </button>
     </div>
@@ -1326,29 +1322,23 @@
     }
 
     // ── Quick Join ────────────────────────────────────────────────
-    let qjAbsolutePath = null;
+    let qjAbsolutePath = null;  // ruta absoluta (buscar en PC)
+    let qjRelativePath = null;  // romPath relativo (biblioteca o invitación)
+    let qjGameOk  = false;
+    let qjBiosOk  = false;
+
+    function qjUpdateJoinBtn() {
+      document.getElementById('qj-join-btn').disabled = !(qjGameOk && qjBiosOk);
+    }
 
     function openQuickJoin() {
-      qjAbsolutePath = null;
+      qjAbsolutePath = null; qjRelativePath = null;
+      qjGameOk = false; qjBiosOk = false;
       document.getElementById('qj-code').value = '';
-      document.getElementById('qj-game-path').classList.add('hidden');
+      document.getElementById('qj-status-panel').classList.add('hidden');
       document.getElementById('qj-error').classList.add('hidden');
-      document.getElementById('qj-join-btn').disabled = false;
+      document.getElementById('qj-join-btn').disabled = true;
       document.getElementById('qj-join-btn').textContent = 'Unirse';
-
-      // Poblar dropdown con juegos de la biblioteca
-      const sel = document.getElementById('qj-game-select');
-      sel.innerHTML = '<option value="">-- Seleccionar de biblioteca --</option>';
-      allFolders.forEach(folder => {
-        folder.games.forEach(game => {
-          const opt = document.createElement('option');
-          opt.value = game.romPath;
-          opt.textContent = game.title;
-          sel.appendChild(opt);
-        });
-      });
-
-      checkQjBios();
       document.getElementById('quickjoin-modal').classList.remove('hidden');
       setTimeout(() => document.getElementById('qj-code').focus(), 50);
     }
@@ -1357,33 +1347,126 @@
       document.getElementById('quickjoin-modal').classList.add('hidden');
     }
 
-    async function checkQjBios() {
-      const statusEl = document.getElementById('qj-bios-status');
-      try {
-        const { ok } = await ipcRenderer.invoke('check-bios');
-        if (ok) {
-          statusEl.innerHTML = `
-            <span class="material-icons-round text-green-400 text-base">check_circle</span>
-            <span class="text-xs text-green-400 flex-1">BIOS instaladas</span>`;
-        } else {
-          statusEl.innerHTML = `
-            <span class="material-icons-round text-amber-400 text-base">warning</span>
-            <span class="text-xs text-amber-400 flex-1">Faltan archivos BIOS — los juegos no abrirán sin ellos</span>
-            <button onclick="downloadBios(); closeQuickJoin();" class="flex-shrink-0 text-xs bg-amber-500 hover:bg-amber-400 text-black font-bold px-3 py-1 rounded-lg transition-colors">Descargar</button>`;
-        }
-      } catch(e) {
-        statusEl.innerHTML = `<span class="text-xs text-slate-500">No se pudo verificar BIOS</span>`;
+    async function qjLookup() {
+      const code = document.getElementById('qj-code').value.trim().toUpperCase();
+      const errEl = document.getElementById('qj-error');
+      errEl.classList.add('hidden');
+      if (!code) {
+        document.getElementById('qj-error-text').textContent = 'Ingresa el código de sala';
+        errEl.classList.remove('hidden'); return;
       }
+
+      const lookupBtn = document.getElementById('qj-lookup-btn');
+      lookupBtn.disabled = true; lookupBtn.textContent = '...';
+      qjGameOk = false; qjBiosOk = false; qjUpdateJoinBtn();
+      document.getElementById('qj-status-panel').classList.remove('hidden');
+
+      // 1. Buscar invitación en Supabase por gamekey (dirigida a mí)
+      let gamePath = null, gameTitle = null;
+      try {
+        const auth = safeRequireAuth();
+        if (auth && !isGuest()) {
+          const user = await auth.getCurrentUser();
+          if (user) {
+            const { supabase } = require('../supabase');
+            const { data } = await supabase
+              .from('invitations')
+              .select('game_path, game_title')
+              .eq('gamekey', code)
+              .eq('to_user_id', user.id)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
+            if (data) { gamePath = data.game_path; gameTitle = data.game_title; }
+          }
+        }
+      } catch(_) {}
+
+      // 2. Mostrar estado del juego
+      const gameRow = document.getElementById('qj-game-row');
+      if (gamePath) {
+        // Invitación encontrada: verificar si el archivo existe localmente
+        const fs = require('fs');
+        const path = require('path');
+        const gamesBase = await ipcRenderer.invoke('get-games-dir');
+        const fullPath = path.join(gamesBase, gamePath);
+        if (fs.existsSync(fullPath)) {
+          qjRelativePath = gamePath; qjAbsolutePath = null; qjGameOk = true;
+          gameRow.innerHTML = `
+            <span class="material-icons-round text-green-400 text-base">check_circle</span>
+            <span class="text-xs text-green-400 flex-1">🎮 ${escHTML(gameTitle || gamePath)}</span>`;
+        } else {
+          // El host indicó el juego pero no lo tienes: ofrecer buscarlo
+          qjGameOk = false;
+          gameRow.innerHTML = `
+            <span class="material-icons-round text-amber-400 text-base">folder_off</span>
+            <span class="text-xs text-amber-400 flex-1">No tienes: <b>${escHTML(gameTitle || gamePath)}</b></span>
+            <button onclick="browseQjGame()" class="flex-shrink-0 text-xs bg-slate-600 hover:bg-slate-500 text-white px-2 py-1 rounded-lg">Buscar en PC</button>`;
+        }
+      } else {
+        // Sin invitación en Supabase (no son amigos o código manual):
+        // mostrar selector de biblioteca + botón carpeta
+        qjGameOk = false;
+        const opts = allFolders.map(f => f.games.map(g =>
+          `<option value="${escHTML(g.romPath)}">${escHTML(g.title)}</option>`
+        ).join('')).join('');
+        gameRow.innerHTML = `
+          <span class="material-icons-round text-slate-400 text-base">help_outline</span>
+          <div class="flex-1">
+            <p class="text-xs text-slate-400 mb-1.5">Selecciona el juego que van a jugar:</p>
+            <div class="flex gap-2">
+              <select onchange="qjPickFromLibrary(this.value)"
+                class="flex-1 bg-slate-700 border border-slate-600 rounded-lg px-2 py-1.5 text-white text-xs min-w-0">
+                <option value="">— Mi biblioteca —</option>${opts}
+              </select>
+              <button onclick="browseQjGame()" title="Buscar .cue en mi PC"
+                class="flex-shrink-0 px-2 py-1.5 bg-slate-600 hover:bg-slate-500 text-white rounded-lg transition-colors">
+                <span class="material-icons-round text-sm">folder_open</span>
+              </button>
+            </div>
+          </div>`;
+      }
+
+      // 3. Verificar BIOS
+      await qjCheckBios();
+
+      lookupBtn.disabled = false; lookupBtn.textContent = 'Buscar';
+      qjUpdateJoinBtn();
+    }
+
+    function qjPickFromLibrary(romPath) {
+      if (!romPath) { qjGameOk = false; qjUpdateJoinBtn(); return; }
+      qjRelativePath = romPath; qjAbsolutePath = null; qjGameOk = true;
+      qjUpdateJoinBtn();
     }
 
     async function browseQjGame() {
       const filePath = await ipcRenderer.invoke('choose-cue-file');
       if (!filePath) return;
-      qjAbsolutePath = filePath;
-      document.getElementById('qj-game-select').value = '';
-      const pathEl = document.getElementById('qj-game-path');
-      pathEl.textContent = '📁 ' + filePath;
-      pathEl.classList.remove('hidden');
+      qjAbsolutePath = filePath; qjRelativePath = null; qjGameOk = true;
+      const name = filePath.split(/[/\\]/).pop().replace('.cue','');
+      document.getElementById('qj-game-row').innerHTML = `
+        <span class="material-icons-round text-green-400 text-base">check_circle</span>
+        <span class="text-xs text-green-400 flex-1 truncate">📁 ${escHTML(name)}</span>
+        <button onclick="browseQjGame()" class="flex-shrink-0 text-xs text-slate-400 hover:text-white">cambiar</button>`;
+      qjUpdateJoinBtn();
+    }
+
+    async function qjCheckBios() {
+      const row = document.getElementById('qj-bios-row');
+      row.innerHTML = `<span class="material-icons-round text-slate-400 text-base animate-spin">sync</span><span class="text-xs text-slate-400 flex-1">Verificando BIOS...</span>`;
+      try {
+        const { ok } = await ipcRenderer.invoke('check-bios');
+        qjBiosOk = ok;
+        if (ok) {
+          row.innerHTML = `<span class="material-icons-round text-green-400 text-base">check_circle</span><span class="text-xs text-green-400 flex-1">BIOS de PS1 instaladas</span>`;
+        } else {
+          row.innerHTML = `
+            <span class="material-icons-round text-amber-400 text-base">warning</span>
+            <span class="text-xs text-amber-400 flex-1">Faltan BIOS de PS1</span>
+            <button onclick="downloadBios();closeQuickJoin();" class="flex-shrink-0 text-xs bg-amber-500 hover:bg-amber-400 text-black font-bold px-3 py-1 rounded-lg">Descargar</button>`;
+        }
+      } catch(_) { qjBiosOk = true; }
     }
 
     async function doQuickJoin() {
@@ -1391,34 +1474,20 @@
       const errEl = document.getElementById('qj-error');
       const errText = document.getElementById('qj-error-text');
       errEl.classList.add('hidden');
-
-      if (!code) {
-        errText.textContent = 'Ingresa el código de sala';
-        errEl.classList.remove('hidden'); return;
-      }
-      const selectVal = document.getElementById('qj-game-select').value;
-      if (!selectVal && !qjAbsolutePath) {
-        errText.textContent = 'Selecciona el juego de tu biblioteca o búscalo en tu PC';
-        errEl.classList.remove('hidden'); return;
-      }
-
       const btn = document.getElementById('qj-join-btn');
-      btn.disabled = true;
-      btn.textContent = 'Conectando...';
-
+      btn.disabled = true; btn.textContent = 'Conectando...';
       try {
         let result;
         if (qjAbsolutePath) {
           const { conectarSalaMednafenAbsoluto } = require('../gameOnly');
           result = await conectarSalaMednafenAbsoluto(code, qjAbsolutePath);
-        } else {
+        } else if (qjRelativePath) {
           const { conectarSalaMednafen } = require('../gameOnly');
-          const s = selectVal.lastIndexOf('/');
-          const carpeta = s !== -1 ? selectVal.substring(0, s) : '';
-          const archivo = s !== -1 ? selectVal.substring(s + 1) : selectVal;
+          const s = qjRelativePath.lastIndexOf('/');
+          const carpeta = s !== -1 ? qjRelativePath.substring(0, s) : '';
+          const archivo = s !== -1 ? qjRelativePath.substring(s + 1) : qjRelativePath;
           result = await conectarSalaMednafen(code, carpeta, archivo);
         }
-
         if (result && result.success) {
           closeQuickJoin();
           ipcRenderer.invoke('minimize-window');
@@ -1430,8 +1499,8 @@
         errText.textContent = e.message;
         errEl.classList.remove('hidden');
       } finally {
-        btn.disabled = false;
-        btn.textContent = 'Unirse';
+        btn.disabled = false; btn.textContent = 'Unirse';
+        qjUpdateJoinBtn();
       }
     }
 
