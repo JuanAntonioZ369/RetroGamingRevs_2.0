@@ -16,17 +16,17 @@ echo.
 where nvm >nul 2>&1
 if %errorlevel% == 0 (
     echo Switching to Node 18 (nvm)...
-    nvm use 18.20.4 >nul 2>&1
+    nvm use 20.18.1 >nul 2>&1
     if %errorlevel% neq 0 (
-        echo Instalando Node 18.20.4...
-        nvm install 18.20.4
-        nvm use 18.20.4
+        echo Instalando Node 20.18.1...
+        nvm install 20.18.1
+        nvm use 20.18.1
     )
 ) else (
     for /f "tokens=2 delims=v." %%m in ('node --version 2^>nul') do set NODEVER=%%m
-    if not "%NODEVER%"=="18" (
+    if not "%NODEVER%"=="20" (
         echo.
-        echo  ADVERTENCIA: Se recomienda Node 18 para este proyecto.
+        echo  ADVERTENCIA: Se recomienda Node 20 para este proyecto.
         echo  Version actual:
         node --version
         echo  Instala nvm-windows: https://github.com/coreybutler/nvm-windows/releases

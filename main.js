@@ -40,6 +40,11 @@ function getGamesList() {
   const gamesDir = (savedDir && fs.existsSync(savedDir)) ? savedDir : path.join(__dirname, 'games');
   const folders = [];
   const otrosGames = [];
+  // Crear carpeta de juegos si no existe
+  if (!fs.existsSync(gamesDir)) {
+    try { fs.mkdirSync(gamesDir, { recursive: true }); } catch (_) {}
+    return folders; // vacía, sin error
+  }
   try {
     const topLevel = fs.readdirSync(gamesDir, { withFileTypes: true });
 

@@ -84,7 +84,7 @@
     ]
   },
   "engines": {
-    "node": "18.x"
+    "node": "20.x"
   },
   "allowScripts": {
     "electron-winstaller@5.4.0": true,
