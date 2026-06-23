@@ -52,4 +52,28 @@ async function getGamesUrl() {
   return cfg.games_url || null
 }
 
-module.exports = { isBetaOpen, getLatestVersion, getDownloadUrl, getBiosUrl, getGamesUrl }
+/**
+ * Retorna la configuración del servidor netplay de Mednafen.
+ * Si no hay configuración remota, usa el servidor público por defecto.
+ */
+async function getMednafenNetplayServer() {
+  const cfg = await fetchAppConfig()
+  return {
+    host: cfg.mednafen_netplay_host || 'netplay.fobby.net',
+    port: cfg.mednafen_netplay_port || '4046'
+  }
+}
+
+/**
+ * Retorna la configuración del servidor MITM para RetroArch netplay.
+ * Si no hay configuración remota, usa el servidor de Lima (custom).
+ */
+async function getRetroArchMitmServer() {
+  const cfg = await fetchAppConfig()
+  return {
+    host: cfg.retroarch_mitm_host || '38.250.116.33',
+    port: cfg.retroarch_mitm_port || '55435'
+  }
+}
+
+module.exports = { isBetaOpen, getLatestVersion, getDownloadUrl, getBiosUrl, getGamesUrl, getMednafenNetplayServer, getRetroArchMitmServer }

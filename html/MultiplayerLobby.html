@@ -486,7 +486,7 @@
           result = jugarMultijugador4(carpeta, archivo);
         } else {
           // Mednafen 2-player (default)
-          result = jugarMultijugador('', carpeta, archivo);
+          result = await jugarMultijugador('', carpeta, archivo);
         }
         if (!result || !result.success) {
           const msg = result?.error === 'already_running'
@@ -529,7 +529,7 @@
         showToast('Código inválido. Solo letras y números, máx 8 caracteres.', 'error');
         return;
       }
-      const result = conectarSalaMednafen(raw, carpeta, archivo);
+      const result = await conectarSalaMednafen(raw, carpeta, archivo);
       if (result && !result.success) {
         showToast(result.error === 'already_running'
           ? 'Ya hay un juego en ejecución. Ciérralo primero.'

@@ -10,8 +10,20 @@ const { uploadSaves, downloadSaves } = require('./saveSync')
 const inRenderer = typeof window !== 'undefined'
 const { updatePresence, setOffline } = inRenderer ? require('./friendsManager') : { updatePresence: () => Promise.resolve(), setOffline: () => Promise.resolve() }
 
-const NETPLAY_HOST = 'netplay.fobby.net'
-const NETPLAY_PORT = '4046'
+// Valores por defecto (se sobreescriben con los de Supabase si están disponibles)
+const DEFAULT_MEDNAFEN_HOST = 'netplay.fobby.net'
+const DEFAULT_MEDNAFEN_PORT = '4046'
+const DEFAULT_MITM_HOST = '38.250.116.33'
+const DEFAULT_MITM_PORT = '55435'
+
+async function getMednafenServer() {
+  try { return await require('./appConfig').getMednafenNetplayServer() }
+  catch(_) { return { host: DEFAULT_MEDNAFEN_HOST, port: DEFAULT_MEDNAFEN_PORT } }
+}
+async function getMitmServer() {
+  try { return await require('./appConfig').getRetroArchMitmServer() }
+  catch(_) { return { host: DEFAULT_MITM_HOST, port: DEFAULT_MITM_PORT } }
+}
 
 // Referencia al proceso de juego activo (para poder cerrarlo)
 let currentGameProcess = null
@@ -132,8 +144,8 @@ function jugarRetroArch(carpeta, archivo, sistema) {
   proc.unref()
 }
 
-// Multiplayer: Launch with mednafen netplay as HOST (public server netplay.fobby.net:4046)
-function jugarMultijugador(roomCode, carpeta, archivo) {
+// Multiplayer: Launch with mednafen netplay as HOST
+async function jugarMultijugador(roomCode, carpeta, archivo) {
   if (currentGameProcess) {
     console.warn('Ya hay un juego en ejecución.')
     return { success: false, error: 'already_running' }
@@ -148,13 +160,14 @@ function jugarMultijugador(roomCode, carpeta, archivo) {
   const gamekey = Math.random().toString(36).substring(2, 8).toUpperCase()
 
   const firmwarePath = path.join(base, 'Emuladores', 'mednafen-1.32.1-win64', 'firmware')
+  const { host: netHost, port: netPort } = await getMednafenServer()
 
   const args = [
     '-filesys.path_firmware', firmwarePath,
     '-video.fs', '1',
     '-connect',
-    '-netplay.host', NETPLAY_HOST,
-    '-netplay.port', NETPLAY_PORT,
+    '-netplay.host', netHost,
+    '-netplay.port', netPort,
     '-netplay.nick', nick,
     '-netplay.gamekey', gamekey,
     game
@@ -179,7 +192,7 @@ function jugarMultijugador(roomCode, carpeta, archivo) {
 }
 
 // Multiplayer: Join an existing room by gamekey
-function conectarSalaMednafen(gamekey, carpeta, archivo) {
+async function conectarSalaMednafen(gamekey, carpeta, archivo) {
   if (currentGameProcess) {
     console.warn('Ya hay un juego en ejecución.')
     return { success: false, error: 'already_running' }
@@ -194,13 +207,14 @@ function conectarSalaMednafen(gamekey, carpeta, archivo) {
   const game = resolveGamePath(base, carpeta, archivo)
   const nick = getNickName() || 'Jugador'
   const firmwarePath = path.join(base, 'Emuladores', 'mednafen-1.32.1-win64', 'firmware')
+  const { host: netHost, port: netPort } = await getMednafenServer()
 
   const args = [
     '-filesys.path_firmware', firmwarePath,
     '-video.fs', '1',
     '-connect',
-    '-netplay.host', NETPLAY_HOST,
-    '-netplay.port', NETPLAY_PORT,
+    '-netplay.host', netHost,
+    '-netplay.port', netPort,
     '-netplay.nick', nick,
     '-netplay.gamekey', gamekey,
     game

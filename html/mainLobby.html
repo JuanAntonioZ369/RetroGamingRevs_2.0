@@ -968,7 +968,7 @@
       dismissInvitation();
       const { conectarSalaMednafen } = require('../gameOnly');
       const s = inv.game_path.lastIndexOf('/');
-      conectarSalaMednafen(inv.gamekey, inv.game_path.substring(0,s), inv.game_path.substring(s+1));
+      await conectarSalaMednafen(inv.gamekey, inv.game_path.substring(0,s), inv.game_path.substring(s+1));
     }
     function dismissInvitation() {
       if (currentInvitation) { const fm=safeRequireFriends(); if(fm) fm.declineInvitation(currentInvitation.id).catch(()=>{}); }
