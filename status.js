@@ -254,7 +254,48 @@ function setPassword(nuevaPassword) {
   }
 }
 
-// ─── 10. ID ───
+// ─── 10. Servidor MITM de RetroArch ───
+/**
+ * Actualiza retroarch.cfg con el servidor MITM dado.
+ * Si host es null/vacío, cambia a un servidor público de libretro (São Paulo).
+ * @param {string|null} host  IP o hostname del servidor. null = público.
+ * @param {string|null} port  Puerto. null = 55435.
+ */
+function setNetplayServer(host, port) {
+  try {
+    let cfg = fs.readFileSync(CONFIG_PATH, 'utf8')
+
+    const useCustom = !!(host && host.trim())
+    const mitmServer  = useCustom ? 'custom' : 'saopaulo'
+    const customHost  = useCustom ? host.trim() : ''
+    const mitmPort    = (port && port.trim()) ? port.trim() : '55435'
+
+    // Helper: reemplaza o agrega una clave en el cfg
+    function setCfgKey(key, value) {
+      const re = new RegExp(`${key}\\s*=\\s*"[^"]*"`)
+      if (re.test(cfg)) {
+        cfg = cfg.replace(re, `${key} = "${value}"`)
+      } else {
+        cfg += `\n${key} = "${value}"`
+      }
+    }
+
+    setCfgKey('netplay_use_mitm_server', 'true')
+    setCfgKey('netplay_mitm_server', mitmServer)
+
+    if (useCustom) {
+      setCfgKey('netplay_custom_mitm_server', customHost)
+      setCfgKey('netplay_custom_mitm_port', mitmPort)
+    }
+
+    fs.writeFileSync(CONFIG_PATH, cfg, 'utf8')
+    return { ok: true, server: useCustom ? `${customHost}:${mitmPort}` : 'saopaulo (público)' }
+  } catch (err) {
+    return { ok: false, error: err.message }
+  }
+}
+
+// ─── 11. ID ───
 async function obtenerSalas() {
   const res = await fetch('http://lobby.libretro.com/list/')
   const data = await res.json()
@@ -314,5 +355,6 @@ module.exports = {
   getCPU,
   getRAM,
   getLatencia,
-  getID
+  getID,
+  setNetplayServer
 }

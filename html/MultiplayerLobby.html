@@ -483,7 +483,7 @@
         if (playerCount === 4) {
           // RetroArch 4-player host
           const { jugarMultijugador4 } = require('../gameOnly');
-          result = jugarMultijugador4(carpeta, archivo);
+          result = await jugarMultijugador4(carpeta, archivo);
         } else {
           // Mednafen 2-player (default)
           result = await jugarMultijugador('', carpeta, archivo);

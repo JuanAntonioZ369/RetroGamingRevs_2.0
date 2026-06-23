@@ -2,7 +2,7 @@ const { spawn } = require('child_process')
 const path = require('path')
 const fs = require('fs')
 const { getOfflineArgs, getOnlineArgs } = require('./configManager')
-const { getNickName } = require('./status')
+const { getNickName, setNetplayServer } = require('./status')
 const { getGamesDir } = require('./userConfig')
 const { uploadSaves, downloadSaves } = require('./saveSync')
 
@@ -291,41 +291,56 @@ async function conectarSala(codigo, carpeta, archivo) {
   proc.unref()
 }
 
-// Función para iniciar netplay
-function startNetplay({ mode, ip, port, romPath, mitmServer }) {
-  const base = __dirname
-  const retroarchPath = path.join(base, 'Emuladores','RetroArch-Win64', 'retroarch.exe');
-  const corePath = path.join(base, 'Emuladores','RetroArch-Win64', 'cores', 'mednafen_psx_libretro.dll');
-  const configPath = path.join(base, 'Emuladores','RetroArch-Win64', 'retroarch.cfg');
-  const fullRomPath = resolveGamePath(base, romPath);
+// Aplica el servidor MITM correcto al retroarch.cfg antes de lanzar
+async function applyMitmServer() {
+  try {
+    const { host, port } = await getMitmServer()
+    setNetplayServer(host, port)
+  } catch(_) {
+    // Sin conexión: deja el cfg como está (usa el último valor guardado)
+  }
+}
 
-  let args = ['-L', corePath, '--config', configPath, ...getOnlineArgs(), '--fullscreen', fullRomPath];
+// Función para iniciar netplay (llamada desde main.js via IPC)
+async function startNetplay({ mode, ip, port, romPath }) {
+  await applyMitmServer()
+
+  const base = __dirname
+  const retroarchPath = path.join(base, 'Emuladores','RetroArch-Win64', 'retroarch.exe')
+  const corePath = path.join(base, 'Emuladores','RetroArch-Win64', 'cores', 'mednafen_psx_libretro.dll')
+  const configPath = path.join(base, 'Emuladores','RetroArch-Win64', 'retroarch.cfg')
+  const fullRomPath = resolveGamePath(base, romPath)
+
+  const args = ['-L', corePath, '--config', configPath, ...getOnlineArgs(), '--fullscreen', fullRomPath]
 
   if (mode === 'host') {
-    args.push('--host');
+    args.push('--host')
   } else if (mode === 'client') {
-    args.push('--connect', ip, '--port', port);
+    args.push('--connect', ip, '--port', port)
   }
 
-  const retroarch = spawn(retroarchPath, args, { stdio: 'inherit' });
-  retroarch.on('close', (code) => console.log('RetroArch cerró con código:', code));
-  retroarch.on('error', (err) => console.error('Error spawn:', err.message));
+  const retroarch = spawn(retroarchPath, args, { detached: true, stdio: 'ignore' })
+  retroarch.on('close', (code) => console.log('RetroArch cerró con código:', code))
+  retroarch.on('error', (err) => console.error('Error spawn:', err.message))
+  retroarch.unref()
 
-  return { success: true };
+  return { success: true }
 }
 
 // Multiplayer 4 jugadores: RetroArch como host con multitap
-function jugarMultijugador4(carpeta, archivo) {
+async function jugarMultijugador4(carpeta, archivo) {
   if (currentGameProcess) {
     return { success: false, error: 'already_running' }
   }
+
+  await applyMitmServer()
+
   const base = __dirname
   const core = path.join(base, 'Emuladores', 'RetroArch-Win64', 'cores', 'mednafen_psx_libretro.dll')
   const config = path.join(base, 'Emuladores', 'RetroArch-Win64', 'retroarch.cfg')
   const retroarch = path.join(base, 'Emuladores', 'RetroArch-Win64', 'retroarch.exe')
   const game = resolveGamePath(base, carpeta, archivo)
 
-  // Código para que los clientes puedan conectarse
   const gamekey = Math.random().toString(36).substring(2, 8).toUpperCase()
 
   const args = [
