@@ -268,6 +268,40 @@ NewGameRev/
 
 ---
 
+## Supabase — Setup
+
+Configura tus credenciales en `supabaseConfig.js`:
+
+```js
+const SUPABASE_URL  = 'https://tu-proyecto.supabase.co'
+const SUPABASE_ANON = 'tu-anon-key'
+```
+
+Ve a **Supabase → SQL Editor** y ejecuta en orden:
+1. `supabase_setup.sql` — Todo de una vez: tablas, RLS, Storage, y config de la app
+2. `supabase_friends_setup.sql` — Sistema de amigos y presencia en tiempo real
+
+### Lo único que debes completar en `app_config`
+
+| Key | Qué poner |
+|-----|-----------|
+| `bios_url` | URL base de tus BIOS (archive.org u otro) |
+| `games_url` | Link de Drive con los juegos (solo registrados) |
+| `retroarch_mitm_host` | Tu IP cuando tengas servidor — `null` = público |
+| `mednafen_netplay_host` | Tu IP cuando tengas servidor — `null` = público |
+
+Cambiar servidor cuando tengas el tuyo propio:
+```sql
+UPDATE app_config SET value = 'tu.ip.o.dominio' WHERE key = 'retroarch_mitm_host';
+UPDATE app_config SET value = 'tu.ip.o.dominio' WHERE key = 'mednafen_netplay_host';
+-- Volver al público:
+UPDATE app_config SET value = null WHERE key IN ('retroarch_mitm_host','mednafen_netplay_host');
+```
+
+> La app funciona sin Supabase para jugar solo. Solo se necesita para auth, amigos y sync de saves.
+
+---
+
 ## Tecnologías
 
 - [Electron](https://www.electronjs.org/) — Framework de desktop

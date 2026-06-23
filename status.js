@@ -282,11 +282,9 @@ function setNetplayServer(host, port) {
 
     setCfgKey('netplay_use_mitm_server', 'true')
     setCfgKey('netplay_mitm_server', mitmServer)
-
-    if (useCustom) {
-      setCfgKey('netplay_custom_mitm_server', customHost)
-      setCfgKey('netplay_custom_mitm_port', mitmPort)
-    }
+    // Siempre escribir custom_* para evitar valores residuales de sesiones anteriores
+    setCfgKey('netplay_custom_mitm_server', useCustom ? customHost : '')
+    setCfgKey('netplay_custom_mitm_port',   useCustom ? mitmPort   : '')
 
     fs.writeFileSync(CONFIG_PATH, cfg, 'utf8')
     return { ok: true, server: useCustom ? `${customHost}:${mitmPort}` : 'saopaulo (público)' }

@@ -522,7 +522,7 @@
       }
     }
 
-    function conectarConCodigo() {
+    async function conectarConCodigo() {
       const raw = document.getElementById('joinCode').value.trim().toUpperCase();
       if (!raw) return;
       if (!/^[A-Z0-9]{1,8}$/.test(raw)) {

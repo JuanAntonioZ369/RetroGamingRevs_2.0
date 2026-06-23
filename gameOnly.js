@@ -295,9 +295,12 @@ async function conectarSala(codigo, carpeta, archivo) {
 async function applyMitmServer() {
   try {
     const { host, port } = await getMitmServer()
-    setNetplayServer(host, port)
-  } catch(_) {
-    // Sin conexión: deja el cfg como está (usa el último valor guardado)
+    const result = setNetplayServer(host, port)
+    if (!result.ok) console.warn('applyMitmServer: no se pudo escribir retroarch.cfg —', result.error)
+    else console.log('applyMitmServer: servidor →', result.server)
+  } catch(e) {
+    // Sin conexión: deja el cfg con el último valor guardado
+    console.warn('applyMitmServer: sin conexión, usando cfg previo')
   }
 }
 
