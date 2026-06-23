@@ -1427,7 +1427,13 @@
           </div>`;
       }
 
-      // 3. Verificar BIOS
+      // 3. Mostrar emulador detectado en la fila de BIOS (antes de verificar)
+      const emulatorDetected = qjDetectEmulator(code);
+      document.getElementById('qj-bios-row').innerHTML = `
+        <span class="material-icons-round text-primary text-base">memory</span>
+        <span class="text-xs text-slate-400 flex-1">Emulador: <b class="text-white">${emulatorDetected === 'retroarch' ? 'RetroArch (4 jugadores)' : 'Mednafen (2 jugadores)'}</b></span>`;
+
+      // 4. Verificar BIOS
       await qjCheckBios();
 
       lookupBtn.disabled = false; lookupBtn.textContent = 'Buscar';
@@ -1469,6 +1475,12 @@
       } catch(_) { qjBiosOk = true; }
     }
 
+    // Detecta el emulador por el formato del código:
+    // solo dígitos → RetroArch (ID de sala lobby), letras+números → Mednafen (gamekey)
+    function qjDetectEmulator(code) {
+      return /^\d+$/.test(code) ? 'retroarch' : 'mednafen';
+    }
+
     async function doQuickJoin() {
       const code = document.getElementById('qj-code').value.trim().toUpperCase();
       const errEl = document.getElementById('qj-error');
@@ -1476,17 +1488,27 @@
       errEl.classList.add('hidden');
       const btn = document.getElementById('qj-join-btn');
       btn.disabled = true; btn.textContent = 'Conectando...';
+
+      const emulator = qjDetectEmulator(code);
+      const go = require('../gameOnly');
+
       try {
         let result;
         if (qjAbsolutePath) {
-          const { conectarSalaMednafenAbsoluto } = require('../gameOnly');
-          result = await conectarSalaMednafenAbsoluto(code, qjAbsolutePath);
+          if (emulator === 'retroarch') {
+            result = await go.conectarSalaAbsoluto(code, qjAbsolutePath);
+          } else {
+            result = await go.conectarSalaMednafenAbsoluto(code, qjAbsolutePath);
+          }
         } else if (qjRelativePath) {
-          const { conectarSalaMednafen } = require('../gameOnly');
           const s = qjRelativePath.lastIndexOf('/');
           const carpeta = s !== -1 ? qjRelativePath.substring(0, s) : '';
           const archivo = s !== -1 ? qjRelativePath.substring(s + 1) : qjRelativePath;
-          result = await conectarSalaMednafen(code, carpeta, archivo);
+          if (emulator === 'retroarch') {
+            result = await go.conectarSala(code, carpeta, archivo);
+          } else {
+            result = await go.conectarSalaMednafen(code, carpeta, archivo);
+          }
         }
         if (result && result.success) {
           closeQuickJoin();

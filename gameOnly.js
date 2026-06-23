@@ -383,7 +383,59 @@ async function jugarMultijugador4(carpeta, archivo) {
   return { success: true, gamekey }
 }
 
-// Unirse a una sala con ruta absoluta (para juegos fuera de la carpeta games/)
+// RetroArch: unirse a sala con ruta absoluta (para juegos fuera de games/)
+async function conectarSalaAbsoluto(codigo, absoluteGamePath) {
+  if (currentGameProcess) {
+    return { success: false, error: 'already_running' }
+  }
+  if (!fs.existsSync(absoluteGamePath)) {
+    return { success: false, error: 'Archivo de juego no encontrado' }
+  }
+
+  let salas
+  try {
+    salas = await obtenerSalas()
+  } catch (err) {
+    return { success: false, error: 'No se pudo obtener salas del lobby' }
+  }
+
+  const sala = salas.find(s => s.fields.id === parseInt(codigo))
+  if (!sala) return { success: false, error: 'Sala no encontrada' }
+
+  const { mitm_ip, mitm_port, mitm_session } = sala.fields
+  if (!mitm_session) return { success: false, error: 'Sala sin MITM asignado' }
+
+  await applyMitmServer()
+
+  const base = __dirname
+  const core      = path.join(base, 'Emuladores', 'RetroArch-Win64', 'cores', 'mednafen_psx_libretro.dll')
+  const config    = path.join(base, 'Emuladores', 'RetroArch-Win64', 'retroarch.cfg')
+  const retroarch = path.join(base, 'Emuladores', 'RetroArch-Win64', 'retroarch.exe')
+  const retroarchDir = path.join(base, 'Emuladores', 'RetroArch-Win64')
+
+  const args = [
+    '-L', core, '--config', config,
+    ...getOnlineArgs(),
+    '--connect', mitm_ip, '--port', String(mitm_port),
+    '--mitm-session', mitm_session,
+    '--fullscreen',
+    absoluteGamePath
+  ]
+
+  const proc = spawn(retroarch, args, { detached: true, stdio: 'ignore', cwd: retroarchDir })
+  currentGameProcess = proc
+  updatePresence(path.basename(absoluteGamePath).replace('.cue','')).catch(() => {})
+  proc.on('close', () => {
+    if (currentGameProcess === proc) currentGameProcess = null
+    setOffline().catch(() => {})
+    uploadSaves(path.basename(absoluteGamePath).replace('.cue',''), 'retroarch').catch(() => {})
+  })
+  proc.on('error', (err) => console.error('Error spawn RetroArch absoluto:', err.message))
+  proc.unref()
+  return { success: true }
+}
+
+// Mednafen: unirse a una sala con ruta absoluta (para juegos fuera de la carpeta games/)
 async function conectarSalaMednafenAbsoluto(gamekey, absoluteGamePath) {
   if (currentGameProcess) {
     return { success: false, error: 'already_running' }
@@ -431,4 +483,4 @@ async function conectarSalaMednafenAbsoluto(gamekey, absoluteGamePath) {
   return { success: true }
 }
 
-module.exports = { jugar, jugarMultijugador, jugarMultijugador4, conectarSala, conectarSalaMednafen, conectarSalaMednafenAbsoluto, startNetplay, killCurrentGame, isGameRunning }
+module.exports = { jugar, jugarMultijugador, jugarMultijugador4, conectarSala, conectarSalaAbsoluto, conectarSalaMednafen, conectarSalaMednafenAbsoluto, startNetplay, killCurrentGame, isGameRunning }
