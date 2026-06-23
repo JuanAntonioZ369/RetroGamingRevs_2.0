@@ -535,8 +535,12 @@
         const data = await registerUser(username, email, password);
         // Si Supabase requiere confirmación de email, el usuario no tiene sesión todavía
         if (data?.user && !data?.session) {
-          // Mostrar mensaje de confirmación en vez de redirigir
-          showError('register', '✉️ Revisa tu email y confirma tu cuenta. Luego vuelve a iniciar sesión.');
+          // Mostrar mensaje de confirmación (estilo info, no error)
+          const el = document.getElementById('error-msg-register');
+          document.getElementById('error-text-register').textContent = 'Revisa tu email y confirma tu cuenta. Luego vuelve a iniciar sesión.';
+          el.classList.remove('hidden');
+          el.querySelector('span.material-icons-round').textContent = 'mark_email_read';
+          el.className = el.className.replace('text-red-400', 'text-green-400');
         } else {
           window.location.href = 'mainLobby.html';
         }

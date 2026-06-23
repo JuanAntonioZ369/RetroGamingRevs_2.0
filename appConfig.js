@@ -3,18 +3,20 @@
  * Lee la tabla `app_config` una vez al inicio y cachea el resultado.
  */
 let _cache = null
+let _cacheEmpty = false // true si el último intento fallő, para reintentar
 
 async function fetchAppConfig() {
-  if (_cache) return _cache
+  if (_cache && !_cacheEmpty) return _cache
   try {
     const { supabase } = require('./supabase')
     const { data } = await supabase
       .from('app_config')
       .select('key, value')
-    if (!data) { _cache = {}; return _cache }
+    if (!data) { _cache = {}; _cacheEmpty = true; return _cache }
     _cache = Object.fromEntries(data.map(r => [r.key, r.value]))
+    _cacheEmpty = false
   } catch {
-    _cache = {}
+    _cache = {}; _cacheEmpty = true
   }
   return _cache
 }

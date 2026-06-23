@@ -166,7 +166,13 @@ function jugarMultijugador(roomCode, carpeta, archivo) {
     cwd: mednafenDir
   })
 
+  currentGameProcess = proc
   proc.on('error', (err) => console.error('Error spawn mednafen:', err.message))
+  proc.on('close', async () => {
+    currentGameProcess = null
+    try { await uploadSaves(archivo.replace('.cue',''), 'mednafen') } catch(_) {}
+    try { await setOffline() } catch(_) {}
+  })
   proc.unref()
 
   return { success: true, gamekey }
@@ -206,7 +212,13 @@ function conectarSalaMednafen(gamekey, carpeta, archivo) {
     cwd: mednafenDir
   })
 
+  currentGameProcess = proc
   proc.on('error', (err) => console.error('Error spawn mednafen join:', err.message))
+  proc.on('close', async () => {
+    currentGameProcess = null
+    try { await uploadSaves(archivo.replace('.cue',''), 'mednafen') } catch(_) {}
+    try { await setOffline() } catch(_) {}
+  })
   proc.unref()
   return { success: true }
 }

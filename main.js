@@ -179,15 +179,30 @@ ipcMain.handle('check-app-status', async () => {
 ipcMain.handle('download-bios', async (event, { url, filename }) => {
   const https = require('https');
   const http = require('http');
-  const destDir = path.join(__dirname, 'Emuladores', 'mednafen-1.32.1-win64', 'firmware');
-  if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
-  const destFile = path.join(destDir, filename);
-  if (fs.existsSync(destFile)) return { ok: true, skipped: true };
+  // Destinos: mednafen firmware + RetroArch system
+  const dirs = [
+    path.join(__dirname, 'Emuladores', 'mednafen-1.32.1-win64', 'firmware'),
+    path.join(__dirname, 'Emuladores', 'RetroArch-Win64', 'system')
+  ];
+  for (const d of dirs) if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
+
+  // Si ya existe en el destino principal, copiar al secundario si falta y salir
+  const primary = path.join(dirs[0], filename);
+  const secondary = path.join(dirs[1], filename);
+  if (fs.existsSync(primary)) {
+    if (!fs.existsSync(secondary)) fs.copyFileSync(primary, secondary);
+    return { ok: true, skipped: true };
+  }
 
   return new Promise((resolve) => {
     const proto = url.startsWith('https') ? https : http;
-    const file = fs.createWriteStream(destFile);
+    const file = fs.createWriteStream(primary);
     proto.get(url, (res) => {
+      if (res.statusCode !== 200) {
+        file.close();
+        fs.unlink(primary, () => {});
+        return resolve({ ok: false, error: `HTTP ${res.statusCode}` });
+      }
       const total = parseInt(res.headers['content-length'] || '0', 10);
       let received = 0;
       res.on('data', (chunk) => {
@@ -199,8 +214,13 @@ ipcMain.handle('download-bios', async (event, { url, filename }) => {
         }
       });
       res.pipe(file);
-      file.on('finish', () => { file.close(); resolve({ ok: true }); });
-      file.on('error', (err) => { fs.unlink(destFile, () => {}); resolve({ ok: false, error: err.message }); });
+      file.on('finish', () => {
+        file.close();
+        // Copiar también a RetroArch system
+        try { fs.copyFileSync(primary, secondary); } catch(_) {}
+        resolve({ ok: true });
+      });
+      file.on('error', (err) => { fs.unlink(primary, () => {}); resolve({ ok: false, error: err.message }); });
     }).on('error', (err) => { resolve({ ok: false, error: err.message }); });
   });
 });

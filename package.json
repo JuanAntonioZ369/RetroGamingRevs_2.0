@@ -40,11 +40,6 @@
         "filter": ["**/*", "!**/firmware/**"]
       },
       {
-        "from": "RetroArch-Win64",
-        "to": "RetroArch-Win64",
-        "filter": ["**/*"]
-      },
-      {
         "from": "pngLogos",
         "to": "pngLogos"
       },

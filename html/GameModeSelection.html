@@ -223,7 +223,7 @@
       document.querySelector('h1').textContent = gameTitle.toUpperCase();
     }
 
-    if (!gameParam) { window.location.href = 'mainLobby.html'; }
+    if (!gameParam) { window.location.href = 'mainLobby.html'; throw new Error('no game param'); }
     const lastSlash = gameParam.lastIndexOf('/');
     const carpeta = gameParam.substring(0, lastSlash);
     const archivo = gameParam.substring(lastSlash + 1);

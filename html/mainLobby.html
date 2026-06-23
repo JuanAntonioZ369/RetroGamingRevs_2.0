@@ -107,10 +107,64 @@
 
       <!-- Gamepad Detector Link -->
       <div class="px-4 pb-2">
-        <button onclick="window.location.href='gamepadDetector.html'" class="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors text-sm">
-          <span class="material-icons-round text-primary/60">sports_esports</span>
-          Detector de Mando
-        </button>
+        <div class="flex items-center gap-1">
+          <button onclick="window.location.href='gamepadDetector.html'" class="flex-1 flex items-center gap-3 px-4 py-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors text-sm">
+            <span class="material-icons-round text-primary/60">sports_esports</span>
+            Detector de Mando
+          </button>
+          <!-- Info sincronía de mandos -->
+          <div class="relative" id="gamepad-info-wrap">
+            <button onclick="toggleGamepadInfo()" class="p-1.5 rounded-xl text-slate-500 hover:text-primary hover:bg-primary/10 transition-colors" title="Sincronizar mando">
+              <span class="material-icons-round text-base">info_outline</span>
+            </button>
+            <div id="gamepad-info-panel" class="hidden absolute left-0 bottom-10 w-72 bg-slate-900 border border-primary/20 rounded-2xl p-4 shadow-2xl z-50 text-xs">
+              <p class="font-bold text-white mb-3 flex items-center gap-2">
+                <span class="material-icons-round text-primary text-base">sports_esports</span>
+                Sincronizar mando en el juego
+              </p>
+
+              <!-- Mednafen -->
+              <div class="mb-3">
+                <p class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1.5">PS1 — Mednafen</p>
+                <div class="space-y-1 text-slate-300">
+                  <div class="flex items-start gap-2">
+                    <span class="material-icons-round text-primary/70 text-sm flex-shrink-0 mt-0.5">looks_one</span>
+                    <span>Conecta el mando <strong>antes</strong> de abrir el juego — se detecta automático.</span>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <span class="material-icons-round text-primary/70 text-sm flex-shrink-0 mt-0.5">looks_two</span>
+                    <span>Si no responde: presiona <kbd class="bg-slate-700 px-1 rounded text-[10px]">Alt+Shift+1</kbd> para reasignar puerto 1.</span>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <span class="material-icons-round text-primary/70 text-sm flex-shrink-0 mt-0.5">looks_3</span>
+                    <span>Jugador 2 en netplay: conectar mando antes de unirse a la sala.</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="h-px bg-slate-800 mb-3"></div>
+
+              <!-- RetroArch -->
+              <div>
+                <p class="text-[10px] uppercase tracking-widest text-slate-500 font-bold mb-1.5">Otras consolas — RetroArch</p>
+                <div class="space-y-1 text-slate-300">
+                  <div class="flex items-start gap-2">
+                    <span class="material-icons-round text-primary/70 text-sm flex-shrink-0 mt-0.5">looks_one</span>
+                    <span>Abre el menú con <kbd class="bg-slate-700 px-1 rounded text-[10px]">F1</kbd> dentro del juego.</span>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <span class="material-icons-round text-primary/70 text-sm flex-shrink-0 mt-0.5">looks_two</span>
+                    <span>Ve a <strong>Settings → Input → Port X Controls</strong> para configurar cada mando.</span>
+                  </div>
+                  <div class="flex items-start gap-2">
+                    <span class="material-icons-round text-primary/70 text-sm flex-shrink-0 mt-0.5">looks_3</span>
+                    <span>En netplay 4 jugadores: cada uno conecta su mando antes de unirse.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Games Folder -->
@@ -1106,11 +1160,13 @@
       const btn = document.getElementById('btn-core-' + safeId);
       if (btn) { btn.disabled = true; btn.textContent = '0%'; }
 
-      ipcRenderer.on('core-download-progress', (e, { dll: d, percent }) => {
+      const onProgress = (e, { dll: d, percent }) => {
         if (d === dll && btn) btn.textContent = percent + '%';
-      });
+      };
+      ipcRenderer.on('core-download-progress', onProgress);
 
       const result = await ipcRenderer.invoke('download-core', dll);
+      ipcRenderer.removeListener('core-download-progress', onProgress);
       if (result.ok) {
         const row = document.getElementById('core-row-' + safeId);
         if (row && btn) {
@@ -1119,6 +1175,20 @@
       } else {
         if (btn) { btn.disabled = false; btn.textContent = 'Error'; }
         console.error('installCore error:', result.error);
+      }
+    }
+
+    // ── Gamepad Info Panel ────────────────────────────────────────
+    let gamepadInfoOpen = false;
+
+    function toggleGamepadInfo() {
+      const panel = document.getElementById('gamepad-info-panel');
+      gamepadInfoOpen = !gamepadInfoOpen;
+      panel.classList.toggle('hidden', !gamepadInfoOpen);
+      // Cerrar el otro panel si está abierto
+      if (gamepadInfoOpen && libraryInfoOpen) {
+        libraryInfoOpen = false;
+        document.getElementById('library-info-panel').classList.add('hidden');
       }
     }
 
@@ -1131,14 +1201,22 @@
       libraryInfoOpen = !libraryInfoOpen;
       panel.classList.toggle('hidden', !libraryInfoOpen);
       if (libraryInfoOpen && !gamesUrlLoaded) loadGamesUrl();
+      // Cerrar el otro panel si está abierto
+      if (libraryInfoOpen && gamepadInfoOpen) {
+        gamepadInfoOpen = false;
+        document.getElementById('gamepad-info-panel').classList.add('hidden');
+      }
     }
 
-    // Cerrar panel si se hace click fuera
+    // Cerrar paneles si se hace click fuera
     document.addEventListener('click', (e) => {
-      const wrap = document.getElementById('library-info-wrap');
-      if (libraryInfoOpen && wrap && !wrap.contains(e.target)) {
+      if (libraryInfoOpen && !document.getElementById('library-info-wrap')?.contains(e.target)) {
         libraryInfoOpen = false;
         document.getElementById('library-info-panel').classList.add('hidden');
+      }
+      if (gamepadInfoOpen && !document.getElementById('gamepad-info-wrap')?.contains(e.target)) {
+        gamepadInfoOpen = false;
+        document.getElementById('gamepad-info-panel').classList.add('hidden');
       }
     });
 

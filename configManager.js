@@ -7,7 +7,7 @@
 
 const path = require('path')
 
-const CONFIG_DIR = path.join(__dirname, 'html/RetroArch-Win64', 'config')
+const CONFIG_DIR = path.join(__dirname, 'Emuladores', 'RetroArch-Win64', 'config')
 
 function getOfflineArgs() {
   return ['--appendconfig', path.join(CONFIG_DIR, 'offline.cfg')]
