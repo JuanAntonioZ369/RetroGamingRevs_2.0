@@ -23,34 +23,31 @@
     "appId": "com.gamingrevs.launcher",
     "productName": "GamingRevs",
     "copyright": "Copyright © 2025 GamingRevs",
-    "asar": true,
+    "asar": false,
     "files": [
       "**/*",
       "!games/**",
       "!**/*.cue",
-      "!**/*.bin",
       "!**/*.img",
+      "!**/*.mcr",
+      "!**/*.mcs",
+      "!**/*.srm",
+      "!**/*.state*",
       "!Emuladores/mednafen-1.32.1-win64/firmware/**",
+      "!Emuladores/RetroArch-Win64/system/scph*",
+      "!Emuladores/mednafen-1.32.1-win64/sav/**",
+      "!Emuladores/mednafen-1.32.1-win64/mcs/**",
+      "!Emuladores/RetroArch-Win64/saves/**",
+      "!Emuladores/RetroArch-Win64/states/**",
+      "!Emuladores/mednafen-1.32.1-win64/stdout.txt",
+      "!Emuladores/mednafen-1.32.1-win64/stderr.txt",
+      "!Emuladores/mednafen-1.32.1-win64/mednafen.lck",
       "!userData.json",
-      "!node_modules/docx/**"
-    ],
-    "extraResources": [
-      {
-        "from": "Emuladores",
-        "to": "Emuladores",
-        "filter": [
-          "**/*",
-          "!**/firmware/**"
-        ]
-      },
-      {
-        "from": "pngLogos",
-        "to": "pngLogos"
-      },
-      {
-        "from": "html",
-        "to": "html"
-      }
+      "!node_modules/docx/**",
+      "!**/*.sql",
+      "!**/*.docx",
+      "!.claude/**",
+      "!dist/**"
     ],
     "win": {
       "target": [
