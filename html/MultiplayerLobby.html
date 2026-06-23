@@ -50,7 +50,9 @@
       <div class="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/30">
         <img src="../pngLogos/logo.png" alt="Logo" class="w-full h-full object-cover rounded-xl" />
       </div>
-      <h1 class="font-bold text-lg tracking-tight text-white">GAMING<span class="text-primary">REVS</span>
+      <h1 onclick="window.location.href='mainLobby.html'"
+          class="font-bold text-lg tracking-tight text-white cursor-pointer hover:opacity-80 transition-opacity">
+        GAMING<span class="text-primary">REVS</span>
         <span class="text-xs font-normal text-slate-400 ml-2 not-italic">Multiplayer</span>
       </h1>
     </div>
@@ -144,6 +146,35 @@
             ——
           </div>
 
+          <!-- Player Slots -->
+          <div class="p-4 bg-slate-800/60 rounded-2xl border border-primary/10 text-left">
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Jugadores</p>
+              <span id="player-count-badge" class="text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full font-bold">1 / 2</span>
+            </div>
+            <div class="space-y-2">
+              <div class="flex items-center gap-3 p-2.5 bg-slate-700/60 rounded-xl">
+                <div class="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-bold text-sm flex-shrink-0" id="host-avatar">?</div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-semibold text-white truncate" id="host-name">Tú</p>
+                  <p class="text-[10px] text-green-500">Host</p>
+                </div>
+                <span class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>
+              </div>
+              <div class="flex items-center gap-3 p-2.5 bg-slate-800/40 rounded-xl border border-dashed border-slate-700">
+                <div class="w-8 h-8 rounded-lg bg-slate-700/60 flex items-center justify-center text-slate-600 flex-shrink-0">
+                  <span class="material-icons-round text-base">person_outline</span>
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm text-slate-500">Esperando jugador 2...</p>
+                  <p class="text-[10px] text-slate-600">Comparte el código de arriba</p>
+                </div>
+                <span class="w-2 h-2 rounded-full bg-slate-700 animate-pulse flex-shrink-0"></span>
+              </div>
+            </div>
+            <p class="text-[9px] text-slate-700 mt-2 text-center">PS1 soporta hasta 2 jugadores simultáneos</p>
+          </div>
+
           <!-- Invite online friends -->
           <div id="invite-section" class="hidden mt-2 p-4 bg-slate-800/60 rounded-2xl border border-primary/20 text-left">
             <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-3">Invitar amigos online</p>
@@ -179,6 +210,53 @@
 
   </main>
 
+  <!-- ══════════ PLAYER COUNT MODAL ══════════ -->
+  <div id="player-count-modal" class="hidden fixed inset-0 z-[70] flex items-center justify-center bg-black/70">
+    <div class="bg-slate-900 border border-primary/20 rounded-2xl p-7 w-80 shadow-2xl">
+      <h3 class="font-bold text-white text-lg mb-1 text-center">¿Cuántos jugadores?</h3>
+      <p class="text-slate-400 text-xs mb-6 text-center">Elige el modo de la partida</p>
+      <div class="flex flex-col gap-3">
+        <button onclick="createRoomWithPlayers(2)"
+          class="flex items-center gap-4 p-4 bg-slate-800 hover:bg-primary/10 border border-slate-700 hover:border-primary/40 rounded-xl transition-all group">
+          <div class="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center flex-shrink-0">
+            <span class="material-icons-round text-primary">people</span>
+          </div>
+          <div class="text-left">
+            <p class="text-white font-bold text-sm">2 Jugadores</p>
+            <p class="text-slate-500 text-xs">Mednafen PSX — Más estable</p>
+          </div>
+        </button>
+        <button onclick="createRoomWithPlayers(4)"
+          class="flex items-center gap-4 p-4 bg-slate-800 hover:bg-amber-500/5 border border-slate-700 hover:border-amber-500/30 rounded-xl transition-all group relative">
+          <div class="w-10 h-10 bg-amber-500/20 rounded-xl flex items-center justify-center flex-shrink-0">
+            <span class="material-icons-round text-amber-400">groups</span>
+          </div>
+          <div class="text-left flex-1">
+            <p class="text-white font-bold text-sm">4 Jugadores <span class="text-amber-400 text-xs font-normal">(Multitap)</span></p>
+            <p class="text-slate-500 text-xs">RetroArch PSX — Requiere Multitap</p>
+          </div>
+          <!-- Info icon -->
+          <div class="relative flex-shrink-0" onclick="event.stopPropagation()">
+            <span class="material-icons-round text-slate-600 hover:text-amber-400 transition-colors cursor-pointer text-lg" id="info-4p-icon"
+              onmouseenter="document.getElementById('info-4p-tooltip').classList.remove('hidden')"
+              onmouseleave="document.getElementById('info-4p-tooltip').classList.add('hidden')">
+              info
+            </span>
+            <div id="info-4p-tooltip" class="hidden absolute right-0 bottom-8 w-56 bg-slate-950 border border-amber-500/30 rounded-xl p-3 text-left z-10 shadow-2xl">
+              <p class="text-amber-400 text-[10px] font-bold uppercase tracking-widest mb-1.5">⚠ Puede causar problemas</p>
+              <p class="text-slate-300 text-[11px] leading-relaxed">Requiere juegos con soporte Multitap. Mayor riesgo de lag, desincronización y cierres inesperados vs. 2 jugadores.</p>
+              <p class="text-slate-500 text-[10px] mt-1.5">Recomendado: usa <span class="text-primary font-semibold">2 jugadores</span> siempre que puedas.</p>
+            </div>
+          </div>
+        </button>
+      </div>
+      <button onclick="document.getElementById('player-count-modal').classList.add('hidden')"
+        class="mt-4 w-full py-2 text-slate-500 hover:text-white text-xs transition-colors">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
   <!-- ══════════ TOAST ══════════ -->
   <div id="toast" class="hidden fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-2xl text-sm font-medium max-w-xs"></div>
 
@@ -198,6 +276,7 @@
     const { ipcRenderer } = require('electron');
     const { jugarMultijugador, conectarSalaMednafen } = require('../gameOnly');
     const { getNickName, getMandos } = require('../status');
+    const { getLocalNick } = require('../userConfig');
     const { initGamepad } = require('./gamepadSupport');
 
     function safeRequireAuth()    { try { return require('../supabaseAuth'); }    catch(e) { return null; } }
@@ -236,22 +315,35 @@
         document.getElementById('mando').textContent = mandos.mandos[0] || 'No detectado';
       } catch(e) {}
 
-      // Auth
-      const auth = safeRequireAuth();
-      if (auth) {
-        try {
-          const session = await auth.getSession();
-          if (!session) { window.location.href = 'login.html'; return; }
-          myProfile = await auth.getMyProfile();
-          if (myProfile) {
-            document.getElementById('nickname').textContent = myProfile.username;
-            document.getElementById('avatar-initial').textContent = myProfile.username[0].toUpperCase();
-          }
-        } catch(e) { console.error('auth init:', e); }
+      // Auth + nickname
+      const { isGuest } = require('../userConfig');
+      const localNick = getLocalNick() || getNickName() || 'Jugador';
+
+      if (isGuest()) {
+        // Invitado: solo nick local, sin Supabase
+        document.getElementById('nickname').textContent = localNick;
+        document.getElementById('avatar-initial').textContent = localNick[0]?.toUpperCase() || '?';
       } else {
-        const nick = getNickName();
-        document.getElementById('nickname').textContent = nick;
-        document.getElementById('avatar-initial').textContent = nick[0]?.toUpperCase() || '?';
+        const auth = safeRequireAuth();
+        if (auth) {
+          try {
+            const session = await auth.getSession();
+            if (!session) { window.location.href = 'login.html'; return; }
+            myProfile = await auth.getMyProfile().catch(() => null);
+          } catch(e) { console.error('auth init:', e); }
+        }
+        const displayNick = myProfile?.username || localNick;
+        document.getElementById('nickname').textContent = displayNick;
+        document.getElementById('avatar-initial').textContent = displayNick[0]?.toUpperCase() || '?';
+      }
+
+      // Actualizar slot del host con el nickname
+      const myNick = document.getElementById('nickname').textContent;
+      if (myNick && myNick !== '—') {
+        const hostName = document.getElementById('host-name');
+        const hostAvatar = document.getElementById('host-avatar');
+        if (hostName) hostName.textContent = myNick;
+        if (hostAvatar) hostAvatar.textContent = myNick[0].toUpperCase();
       }
 
       await loadFriendsPanel();
@@ -355,11 +447,20 @@
     }
 
     function showCreate() {
+      // Mostrar modal de selección de jugadores primero
+      document.getElementById('player-count-modal').classList.remove('hidden');
+    }
+
+    function createRoomWithPlayers(playerCount) {
+      document.getElementById('player-count-modal').classList.add('hidden');
       showView('createView');
       document.getElementById('generatedCode').textContent = '——';
       document.getElementById('invite-section').classList.add('hidden');
       document.getElementById('invite-empty').classList.add('hidden');
-      iniciarJuegoMultijugador();
+      // Actualizar badge de jugadores
+      const badge = document.getElementById('player-count-badge');
+      if (badge) badge.textContent = `1 / ${playerCount}`;
+      iniciarJuegoMultijugador(playerCount);
     }
 
     function showJoin() {
@@ -376,9 +477,17 @@
     }
 
     // ── Game actions ──────────────────────────────────────────────
-    async function iniciarJuegoMultijugador() {
+    async function iniciarJuegoMultijugador(playerCount = 2) {
       try {
-        const result = jugarMultijugador('', carpeta, archivo);
+        let result;
+        if (playerCount === 4) {
+          // RetroArch 4-player host
+          const { jugarMultijugador4 } = require('../gameOnly');
+          result = jugarMultijugador4(carpeta, archivo);
+        } else {
+          // Mednafen 2-player (default)
+          result = jugarMultijugador('', carpeta, archivo);
+        }
         if (!result || !result.success) {
           const msg = result?.error === 'already_running'
             ? 'Ya hay un juego en ejecución. Ciérralo primero.'
@@ -389,6 +498,14 @@
         }
         activeGamekey = result.gamekey;
         document.getElementById('generatedCode').textContent = result.gamekey;
+        // Update host slot
+        const myNick = document.getElementById('nickname').textContent;
+        if (myNick && myNick !== '—') {
+          const hostName = document.getElementById('host-name');
+          const hostAvatar = document.getElementById('host-avatar');
+          if (hostName) hostName.textContent = myNick;
+          if (hostAvatar) hostAvatar.textContent = myNick[0].toUpperCase();
+        }
         // Show invite section with current online friends
         const fm = safeRequireFriends();
         if (fm) {
@@ -397,7 +514,6 @@
             : {};
           const online = cachedFriends.filter(f => presenceMap[f.userId]?.status === 'online');
           renderInviteSection(online);
-          // Re-render sidebar too
           renderFriendsPanel(cachedFriends, presenceMap);
         }
       } catch(e) {

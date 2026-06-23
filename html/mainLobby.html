@@ -96,6 +96,13 @@
           <span class="material-icons-round text-primary/60">settings_input_component</span>
           PS1 Core
         </div>
+
+        <!-- Cores Manager -->
+        <div class="flex items-center gap-3 px-4 py-3 rounded-xl text-slate-500 dark:text-slate-400 cursor-pointer hover:text-primary hover:bg-primary/10 transition-colors" onclick="toggleCoresPanel()">
+          <span class="material-icons-round text-primary/60">extension</span>
+          Cores
+          <span id="cores-missing-badge" class="hidden ml-auto text-[9px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full font-bold">!</span>
+        </div>
       </nav>
 
       <!-- Gamepad Detector Link -->
@@ -130,6 +137,7 @@
           <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center text-primary font-bold text-lg" id="avatar-initial">?</div>
           <div class="flex-1 min-w-0">
             <div class="text-sm font-semibold truncate dark:text-white" id="nickname">—</div>
+              <div id="guest-badge" class="hidden text-[9px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider">Invitado</div>
             <div class="flex items-center gap-1.5 text-[10px] text-green-500">
               <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
               Online
@@ -175,6 +183,39 @@
             <button id="back-folder-btn" onclick="backToFolders()" class="hidden p-2 rounded-xl text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors">
               <span class="material-icons-round">arrow_back</span>
             </button>
+            <!-- Info button (solo visible en root) -->
+            <div class="relative" id="library-info-wrap">
+              <button onclick="toggleLibraryInfo()" class="p-1.5 rounded-xl text-slate-400 hover:text-primary hover:bg-primary/10 transition-colors" title="Consejos de organización">
+                <span class="material-icons-round text-xl">info_outline</span>
+              </button>
+              <!-- Info dropdown -->
+              <div id="library-info-panel" class="hidden absolute left-0 top-10 w-80 bg-slate-900 border border-primary/20 rounded-2xl p-5 shadow-2xl z-50 text-sm">
+                <p class="font-bold text-white mb-3 flex items-center gap-2">
+                  <span class="material-icons-round text-primary text-base">folder_open</span>
+                  Cómo organizar tus juegos
+                </p>
+                <div class="bg-slate-800 rounded-xl p-3 font-mono text-[11px] text-slate-300 leading-relaxed mb-3">
+                  📁 games/<br>
+                  &nbsp;&nbsp;📁 Crash Bandicoot/<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;crash.cue<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;crash.bin<br>
+                  &nbsp;&nbsp;📁 Winning Eleven 4/<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;we4.cue<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;we4.bin
+                </div>
+                <p class="text-slate-400 text-xs mb-4">Cada juego en su propia carpeta con el <code class="text-primary">.cue</code> y los <code class="text-primary">.bin</code> juntos. La app los detecta automáticamente.</p>
+                <div id="games-download-section">
+                  <div class="h-px bg-slate-800 mb-3"></div>
+                  <p class="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-2">Descargar juegos</p>
+                  <div id="games-url-content">
+                    <div class="flex items-center gap-2 text-xs text-slate-500">
+                      <span class="material-icons-round text-sm animate-spin">sync</span>
+                      Cargando...
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
             <h2 id="section-title" class="text-2xl font-bold dark:text-white">Library</h2>
           </div>
           <div id="view-toggle" class="hidden items-center gap-1 bg-slate-100 dark:bg-slate-800/50 p-1 rounded-lg">
@@ -193,17 +234,44 @@
         </div>
       </section>
 
+      <!-- BIOS Missing Banner -->
+      <div id="bios-banner" class="hidden glass-panel border-t border-amber-500/30 bg-amber-500/5 px-6 py-2 flex items-center justify-between gap-4">
+        <div class="flex items-center gap-2 text-amber-400 text-xs font-medium">
+          <span class="material-icons-round text-base">warning</span>
+          <span>Faltan archivos BIOS de PS1. Los juegos no abrirán sin ellos.</span>
+        </div>
+        <button id="bios-download-btn" onclick="downloadBios()"
+          class="flex-shrink-0 px-3 py-1 bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold rounded-lg transition-colors">
+          Descargar BIOS
+        </button>
+      </div>
+
+      <!-- BIOS Download Progress -->
+      <div id="bios-progress" class="hidden glass-panel border-t border-primary/20 px-6 py-2">
+        <div class="flex items-center gap-3">
+          <span class="material-icons-round text-primary text-base animate-spin">sync</span>
+          <div class="flex-1">
+            <div class="flex justify-between text-xs text-slate-400 mb-1">
+              <span id="bios-progress-name">Descargando...</span>
+              <span id="bios-progress-pct">0%</span>
+            </div>
+            <div class="h-1 bg-slate-700 rounded-full overflow-hidden">
+              <div id="bios-progress-bar" class="h-full bg-primary rounded-full transition-all" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Bottom Status Bar -->
       <footer class="h-10 glass-panel border-t border-slate-200 dark:border-primary/10 flex items-center justify-between px-6 text-[11px] font-medium text-slate-400">
         <div class="flex items-center gap-6">
           <div class="flex items-center gap-2">
-            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-            <span> 
-              Emulator Core: Desactive
-            </span>
+            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+            <span>Mednafen PSX</span>
           </div>
         </div>
         <div class="flex items-center gap-6">
+          <span id="version-label" class="text-slate-600">v1.0.0</span>
         </div>
       </footer>
 
@@ -369,6 +437,23 @@
     </div>
   </div>
 
+  <!-- ══════════ CORES PANEL (slide-in) ══════════ -->
+  <div id="cores-panel" class="fixed right-0 top-0 h-full w-96 bg-background-dark border-l border-primary/10 z-40 transform translate-x-full transition-transform duration-300 flex flex-col shadow-2xl">
+    <div class="p-5 border-b border-primary/10 flex items-center justify-between">
+      <div>
+        <h2 class="font-bold text-white">Cores de Emulación</h2>
+        <p class="text-xs text-slate-500 mt-0.5">Descarga los emuladores por consola</p>
+      </div>
+      <button onclick="toggleCoresPanel()" class="text-slate-400 hover:text-white transition-colors">
+        <span class="material-icons-round">close</span>
+      </button>
+    </div>
+    <div id="cores-list" class="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-2">
+      <p class="text-xs text-slate-600 text-center py-4">Cargando...</p>
+    </div>
+  </div>
+  <div id="cores-overlay" onclick="toggleCoresPanel()" class="hidden fixed inset-0 bg-black/40 z-30"></div>
+
   <!-- Background Decoration Icons -->
   <div class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.01] pointer-events-none">
     <img src="../pngLogos/logoFondo.png" alt="Logo" class="w-full h-full object-cover rounded-xl border-2 border-transparent" />
@@ -392,7 +477,7 @@
   <script>
     // ── Requires seguros (no fallan) ──────────────────────────────
     const { getNickName, setNickName } = require('../status');
-    const { getLocalNick, setLocalNick } = require('../userConfig');
+    const { getLocalNick, setLocalNick, isGuest, setGuest, IS_BETA } = require('../userConfig');
     const { ipcRenderer } = require('electron');
     const { initGamepad } = require('./gamepadSupport');
 
@@ -614,31 +699,44 @@
     // ── Auth + Nickname local ─────────────────────────────────────
     async function initAuth() {
       try {
-        // 1. Verificar sesión Supabase
-        const auth = safeRequireAuth();
-        if (auth) {
-          const session = await auth.getSession();
-          if (!session) { window.location.href = 'login.html'; return; }
-          myProfile = await auth.getMyProfile().catch(() => null);
+        const guest = isGuest();
+
+        if (guest && !IS_BETA) {
+          // Beta cerrada: forzar registro
+          window.location.href = 'login.html';
+          return;
         }
 
-        // 2. Nickname: siempre desde JSON local (fuente de verdad)
+        if (!guest) {
+          // Usuario con cuenta: verificar sesión Supabase
+          const auth = safeRequireAuth();
+          if (auth) {
+            const session = await auth.getSession();
+            if (!session) { window.location.href = 'login.html'; return; }
+            myProfile = await auth.getMyProfile().catch(() => null);
+          }
+        } else {
+          // Invitado: mostrar badge
+          document.getElementById('guest-badge')?.classList.remove('hidden');
+        }
+
+        // Nickname siempre desde JSON local
         let nick = getLocalNick();
 
         if (!nick) {
-          // Primera vez: mostrar modal para pedir nickname
           document.getElementById('firsttime-modal').classList.remove('hidden');
           setTimeout(() => document.getElementById('firsttime-nick').focus(), 100);
-          return; // initAuth continuará en saveFirstTimeNick()
+          return;
         }
 
         applyNick(nick);
 
-        // 3. Cargar amigos (no bloquea el resto)
-        const fm = safeRequireFriends();
-        if (fm) {
-          fm.subscribeToInvitations(showInvitationToast).then(u => { unsubInvitations = u; }).catch(() => {});
-          loadFriends().catch(() => {});
+        if (!guest) {
+          const fm = safeRequireFriends();
+          if (fm) {
+            fm.subscribeToInvitations(showInvitationToast).then(u => { unsubInvitations = u; }).catch(() => {});
+            loadFriends().catch(() => {});
+          }
         }
       } catch(e) { console.error('initAuth:', e); }
     }
@@ -681,8 +779,9 @@
     function doLogout() {
       showConfirmDialog('¿Cerrar sesión?', async () => {
         try { unsubInvitations(); unsubPresence(); } catch(_) {}
+        setGuest(false);
         const auth = safeRequireAuth();
-        if (auth) await auth.logoutUser();
+        if (auth) await auth.logoutUser().catch(() => {});
         window.location.href = 'login.html';
       });
     }
@@ -913,8 +1012,165 @@
       if (currentFolder) renderGames(currentFolder.games, currentView);
     }
 
+    // ── BIOS Check ───────────────────────────────────────────────
+    async function checkBios() {
+      try {
+        const { ok, missing } = await ipcRenderer.invoke('check-bios');
+        if (!ok) document.getElementById('bios-banner').classList.remove('hidden');
+      } catch(e) {}
+    }
+
+    async function downloadBios() {
+      try {
+        const { getBiosUrl } = require('../appConfig');
+        const biosUrl = await getBiosUrl();
+        if (!biosUrl) {
+          // No hay URL configurada aún: abrir instrucciones
+          ipcRenderer.invoke('open-external', 'https://archive.org');
+          return;
+        }
+
+        document.getElementById('bios-banner').classList.add('hidden');
+        document.getElementById('bios-progress').classList.remove('hidden');
+        document.getElementById('bios-download-btn').disabled = true;
+
+        // BIOS files esperados
+        const biosFiles = ['scph5500.bin', 'scph5501.bin', 'scph5502.bin'];
+        let allOk = true;
+        for (const filename of biosFiles) {
+          const fileUrl = biosUrl.endsWith('/') ? biosUrl + filename : biosUrl + '/' + filename;
+          document.getElementById('bios-progress-name').textContent = filename;
+          const result = await ipcRenderer.invoke('download-bios', { url: fileUrl, filename });
+          if (!result.ok && !result.skipped) { allOk = false; break; }
+        }
+
+        document.getElementById('bios-progress').classList.add('hidden');
+        if (allOk) {
+          const msg = document.createElement('div');
+          msg.textContent = '✓ BIOS instaladas correctamente';
+          msg.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 bg-green-600 text-white px-5 py-2 rounded-xl text-sm shadow-xl z-50';
+          document.body.appendChild(msg);
+          setTimeout(() => msg.remove(), 3000);
+        } else {
+          document.getElementById('bios-banner').classList.remove('hidden');
+        }
+      } catch(e) { console.error('downloadBios:', e); }
+    }
+
+    // Listener de progreso de descarga
+    ipcRenderer.on('bios-download-progress', (event, { filename, percent }) => {
+      document.getElementById('bios-progress-pct').textContent = percent + '%';
+      document.getElementById('bios-progress-bar').style.width = percent + '%';
+    });
+
+    // ── Cores Manager ─────────────────────────────────────────────
+    let coresPanelOpen = false;
+
+    function toggleCoresPanel() {
+      coresPanelOpen = !coresPanelOpen;
+      document.getElementById('cores-panel').classList.toggle('translate-x-full', !coresPanelOpen);
+      document.getElementById('cores-overlay').classList.toggle('hidden', !coresPanelOpen);
+      if (coresPanelOpen) loadCoresList();
+    }
+
+    async function loadCoresList() {
+      const list = document.getElementById('cores-list');
+      list.innerHTML = '<p class="text-xs text-slate-600 text-center py-4">Cargando...</p>';
+      try {
+        const cores = await ipcRenderer.invoke('get-cores-status');
+        const missing = cores.filter(c => !c.installed).length;
+        const badge = document.getElementById('cores-missing-badge');
+        if (missing > 0) badge.classList.remove('hidden'); else badge.classList.add('hidden');
+
+        list.innerHTML = cores.map(c => `
+          <div class="flex items-center gap-3 p-3 bg-slate-800/60 rounded-xl border border-slate-700/50" id="core-row-${c.dll.replace(/\./g,'_')}">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-white">${escHTML(c.label)}</p>
+              <div class="flex items-center gap-2 mt-0.5">
+                ${c.netplay ? '<span class="text-[9px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded-full font-bold">NETPLAY ✓</span>' : '<span class="text-[9px] bg-slate-700 text-slate-500 px-1.5 py-0.5 rounded-full">Sin netplay</span>'}
+              </div>
+            </div>
+            ${c.installed
+              ? '<span class="text-green-500 text-xs flex items-center gap-1"><span class="material-icons-round text-sm">check_circle</span>Instalado</span>'
+              : `<button onclick="installCore('${c.dll}')" id="btn-core-${c.dll.replace(/\./g,'_')}" class="px-3 py-1.5 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/90 transition-colors flex-shrink-0">Instalar</button>`
+            }
+          </div>
+        `).join('');
+      } catch(e) {
+        list.innerHTML = '<p class="text-xs text-red-400 text-center py-4">Error al cargar cores</p>';
+      }
+    }
+
+    async function installCore(dll) {
+      const safeId = dll.replace(/\./g, '_');
+      const btn = document.getElementById('btn-core-' + safeId);
+      if (btn) { btn.disabled = true; btn.textContent = '0%'; }
+
+      ipcRenderer.on('core-download-progress', (e, { dll: d, percent }) => {
+        if (d === dll && btn) btn.textContent = percent + '%';
+      });
+
+      const result = await ipcRenderer.invoke('download-core', dll);
+      if (result.ok) {
+        const row = document.getElementById('core-row-' + safeId);
+        if (row && btn) {
+          btn.outerHTML = '<span class="text-green-500 text-xs flex items-center gap-1"><span class="material-icons-round text-sm">check_circle</span>Instalado</span>';
+        }
+      } else {
+        if (btn) { btn.disabled = false; btn.textContent = 'Error'; }
+        console.error('installCore error:', result.error);
+      }
+    }
+
+    // ── Library Info Panel ────────────────────────────────────────
+    let libraryInfoOpen = false;
+    let gamesUrlLoaded = false;
+
+    function toggleLibraryInfo() {
+      const panel = document.getElementById('library-info-panel');
+      libraryInfoOpen = !libraryInfoOpen;
+      panel.classList.toggle('hidden', !libraryInfoOpen);
+      if (libraryInfoOpen && !gamesUrlLoaded) loadGamesUrl();
+    }
+
+    // Cerrar panel si se hace click fuera
+    document.addEventListener('click', (e) => {
+      const wrap = document.getElementById('library-info-wrap');
+      if (libraryInfoOpen && wrap && !wrap.contains(e.target)) {
+        libraryInfoOpen = false;
+        document.getElementById('library-info-panel').classList.add('hidden');
+      }
+    });
+
+    async function loadGamesUrl() {
+      gamesUrlLoaded = true;
+      const container = document.getElementById('games-url-content');
+      try {
+        const { getGamesUrl } = require('../appConfig');
+        const url = await getGamesUrl();
+        if (isGuest()) {
+          container.innerHTML = `
+            <div class="flex items-start gap-2 text-xs text-slate-400">
+              <span class="material-icons-round text-amber-400 text-sm flex-shrink-0">lock</span>
+              <span>Regístrate para acceder al link de descarga de juegos.</span>
+            </div>`;
+        } else if (url) {
+          container.innerHTML = `
+            <a onclick="ipcRenderer.invoke('open-external','${url.replace(/'/g,"\\'")}')" class="flex items-center gap-2 text-xs text-primary hover:text-primary/80 cursor-pointer font-medium transition-colors">
+              <span class="material-icons-round text-sm">cloud_download</span>
+              Descargar juegos (Drive)
+            </a>`;
+        } else {
+          container.innerHTML = `<p class="text-xs text-slate-500">Link de juegos no disponible aún.</p>`;
+        }
+      } catch(e) {
+        container.innerHTML = `<p class="text-xs text-slate-500">No se pudo cargar el link.</p>`;
+      }
+    }
+
     // ── Arrancar ──────────────────────────────────────────────────
     initAuth();
+    checkBios();
   </script>
 
 </body>

@@ -1,10 +1,11 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu, shell } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 const fs = require('fs');
 const { getNickName } = require('./status');
 const { startNetplay, killCurrentGame } = require('./gameOnly');
 const { getGamesDir, setGamesDir } = require('./userConfig');
+const { isBetaOpen, getLatestVersion, getDownloadUrl } = require('./appConfig');
 
 let mainWindow;
 
@@ -19,6 +20,8 @@ function createWindow() {
     }
   });
 
+  // Quitar barra de menú nativa (File Edit View Window Help)
+  Menu.setApplicationMenu(null);
   mainWindow.loadFile('html/login.html');
 }
 
@@ -118,6 +121,19 @@ ipcMain.handle('request-games', async () => {
   return getGamesList();
 });
 
+ipcMain.handle('open-external', async (event, url) => {
+  if (typeof url === 'string' && /^https?:\/\//.test(url)) {
+    shell.openExternal(url);
+  }
+});
+
+ipcMain.handle('check-bios', async () => {
+  const firmwareDir = path.join(__dirname, 'Emuladores', 'mednafen-1.32.1-win64', 'firmware');
+  const required = ['scph5500.bin', 'scph5501.bin', 'scph5502.bin'];
+  const missing = required.filter(f => !fs.existsSync(path.join(firmwareDir, f)));
+  return { ok: missing.length === 0, missing };
+});
+
 ipcMain.handle('get-games-dir', async () => {
   const savedDir = getGamesDir();
   return (savedDir && fs.existsSync(savedDir)) ? savedDir : path.join(__dirname, 'games');
@@ -147,6 +163,70 @@ ipcMain.handle('focus-game', async () => {
   exec(`powershell -command "(New-Object -ComObject WScript.Shell).AppActivate('mednafen')"`)
   exec(`powershell -command "(New-Object -ComObject WScript.Shell).AppActivate('retroarch')"`)
   return true
+});
+
+ipcMain.handle('check-app-status', async () => {
+  const currentVersion = require('./package.json').version;
+  const [betaOpen, latestVersion, downloadUrl] = await Promise.all([
+    isBetaOpen(),
+    getLatestVersion(),
+    getDownloadUrl()
+  ]);
+  const needsUpdate = latestVersion && latestVersion !== currentVersion;
+  return { betaOpen, needsUpdate, latestVersion, currentVersion, downloadUrl };
+});
+
+ipcMain.handle('download-bios', async (event, { url, filename }) => {
+  const https = require('https');
+  const http = require('http');
+  const destDir = path.join(__dirname, 'Emuladores', 'mednafen-1.32.1-win64', 'firmware');
+  if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
+  const destFile = path.join(destDir, filename);
+  if (fs.existsSync(destFile)) return { ok: true, skipped: true };
+
+  return new Promise((resolve) => {
+    const proto = url.startsWith('https') ? https : http;
+    const file = fs.createWriteStream(destFile);
+    proto.get(url, (res) => {
+      const total = parseInt(res.headers['content-length'] || '0', 10);
+      let received = 0;
+      res.on('data', (chunk) => {
+        received += chunk.length;
+        if (total > 0 && mainWindow) {
+          mainWindow.webContents.send('bios-download-progress', {
+            filename, percent: Math.round((received / total) * 100)
+          });
+        }
+      });
+      res.pipe(file);
+      file.on('finish', () => { file.close(); resolve({ ok: true }); });
+      file.on('error', (err) => { fs.unlink(destFile, () => {}); resolve({ ok: false, error: err.message }); });
+    }).on('error', (err) => { resolve({ ok: false, error: err.message }); });
+  });
+});
+
+const { AVAILABLE_CORES, getInstalledCores, downloadCore } = require('./coreDownloader');
+
+ipcMain.handle('get-cores-status', async () => {
+  const installed = getInstalledCores();
+  return AVAILABLE_CORES.map(c => ({
+    ...c,
+    installed: installed.includes(c.dll)
+  }));
+});
+
+ipcMain.handle('download-core', async (event, dll) => {
+  // Validar que el dll está en la lista permitida
+  const allowed = AVAILABLE_CORES.find(c => c.dll === dll);
+  if (!allowed) return { ok: false, error: 'Core no permitido' };
+  try {
+    await downloadCore(dll, (percent) => {
+      if (mainWindow) mainWindow.webContents.send('core-download-progress', { dll, percent });
+    });
+    return { ok: true };
+  } catch(e) {
+    return { ok: false, error: e.message };
+  }
 });
 
 ipcMain.handle('start-netplay', async (event, params) => {

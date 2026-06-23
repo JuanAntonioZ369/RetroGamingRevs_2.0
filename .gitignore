@@ -1,17 +1,36 @@
 # ── Dependencias ─────────────────────────────────────────────────
 node_modules/
 
+# ── Build output ─────────────────────────────────────────────────
+dist/
+
 # ── Juegos del usuario (ROMs) ────────────────────────────────────
 games/
 
+# ── BIOS (nunca subir al repo) ───────────────────────────────────
+Emuladores/mednafen-1.32.1-win64/firmware/
+Emuladores/RetroArch-Win64/system/scph*
+Emuladores/RetroArch-Win64/system/*.bin
+
+# ── Saves y states del usuario ───────────────────────────────────
+Emuladores/mednafen-1.32.1-win64/sav/
+Emuladores/mednafen-1.32.1-win64/mcs/
+Emuladores/RetroArch-Win64/saves/
+Emuladores/RetroArch-Win64/states/
+
+# ── Archivos runtime de mednafen ─────────────────────────────────
+Emuladores/mednafen-1.32.1-win64/stdout.txt
+Emuladores/mednafen-1.32.1-win64/stderr.txt
+Emuladores/mednafen-1.32.1-win64/mednafen.lck
+Emuladores/mednafen-1.32.1-win64/snaps/
+
 # ── Configuración local del usuario ──────────────────────────────
 userData.json
+
+# ── Herramienta Claude (sesiones locales) ────────────────────────
+.claude/
 
 # ── Documentos de referencia (no son parte de la app) ────────────
 *.docx
 *.sql
 html/servidor_optimizacion.md
-
-# ── Claude Code ──────────────────────────────────────────────────
-.claude/
-CLAUDE.md

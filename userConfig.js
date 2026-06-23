@@ -36,4 +36,17 @@ function setGamesDir(dir) {
   writeConfig({ gamesDir: dir })
 }
 
-module.exports = { readConfig, writeConfig, getLocalNick, setLocalNick, getGamesDir, setGamesDir }
+// ── Modo invitado ─────────────────────────────────────────────
+// IS_BETA = true  → invitados pueden entrar libremente
+// IS_BETA = false → solo usuarios registrados (cambiar cuando se lance)
+const IS_BETA = true
+
+function isGuest() {
+  return readConfig().isGuest === true
+}
+
+function setGuest(val) {
+  writeConfig({ isGuest: Boolean(val) })
+}
+
+module.exports = { readConfig, writeConfig, getLocalNick, setLocalNick, getGamesDir, setGamesDir, IS_BETA, isGuest, setGuest }

@@ -68,4 +68,17 @@ async function updateUsername(newUsername) {
   return { ok: true }
 }
 
-module.exports = { loginUser, registerUser, logoutUser, getSession, getCurrentUser, getMyProfile, updateUsername }
+/** Verificar si un username ya está en uso por una cuenta registrada */
+async function isUsernameTaken(username) {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('id')
+      .ilike('username', username)
+      .maybeSingle()
+    if (error) return false // si falla, dejar pasar
+    return !!data
+  } catch { return false }
+}
+
+module.exports = { loginUser, registerUser, logoutUser, getSession, getCurrentUser, getMyProfile, updateUsername, isUsernameTaken }

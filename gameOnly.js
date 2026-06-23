@@ -4,6 +4,7 @@ const fs = require('fs')
 const { getOfflineArgs, getOnlineArgs } = require('./configManager')
 const { getNickName } = require('./status')
 const { getGamesDir } = require('./userConfig')
+const { uploadSaves, downloadSaves } = require('./saveSync')
 
 // Solo disponible en el renderer process (donde existe la sesión de Supabase)
 const inRenderer = typeof window !== 'undefined'
@@ -71,6 +72,8 @@ function jugarMednafen(carpeta, archivo) {
   const game = resolveGamePath(base, carpeta, archivo)
   const firmwarePath = path.join(base, 'Emuladores', 'mednafen-1.32.1-win64', 'firmware')
 
+  downloadSaves(archivo.replace('.cue', ''), 'mednafen').catch(() => {})
+
   const proc = spawn(mednafenExe, [
     '-filesys.path_firmware', firmwarePath,
     '-video.fs', '1',
@@ -86,6 +89,7 @@ function jugarMednafen(carpeta, archivo) {
   proc.on('close', () => {
     if (currentGameProcess === proc) currentGameProcess = null
     setOffline().catch(() => {})
+    uploadSaves(archivo.replace('.cue', ''), 'mednafen').catch(() => {})
   })
   proc.on('error', (err) => console.error('Error spawn mednafen solo:', err.message))
   proc.unref()
@@ -102,6 +106,8 @@ function jugarRetroArch(carpeta, archivo, sistema) {
   const game = resolveGamePath(base, carpeta, archivo)
   const config = path.join(base, 'Emuladores', 'RetroArch-Win64', 'retroarch.cfg')
   const retroarch = path.join(base, 'Emuladores', 'RetroArch-Win64', 'retroarch.exe')
+
+  downloadSaves(archivo.replace('.cue', ''), 'retroarch').catch(() => {})
 
   const proc = spawn(retroarch, [
     '-L', core,
@@ -120,6 +126,7 @@ function jugarRetroArch(carpeta, archivo, sistema) {
   proc.on('close', () => {
     if (currentGameProcess === proc) currentGameProcess = null
     setOffline().catch(() => {})
+    uploadSaves(archivo.replace('.cue', ''), 'retroarch').catch(() => {})
   })
   proc.on('error', (err) => console.error('Error spawn RetroArch:', err.message))
   proc.unref()
@@ -281,4 +288,45 @@ function startNetplay({ mode, ip, port, romPath, mitmServer }) {
   return { success: true };
 }
 
-module.exports = { jugar, jugarMultijugador, conectarSala, conectarSalaMednafen, startNetplay, killCurrentGame, isGameRunning }
+// Multiplayer 4 jugadores: RetroArch como host con multitap
+function jugarMultijugador4(carpeta, archivo) {
+  if (currentGameProcess) {
+    return { success: false, error: 'already_running' }
+  }
+  const base = __dirname
+  const core = path.join(base, 'Emuladores', 'RetroArch-Win64', 'cores', 'mednafen_psx_libretro.dll')
+  const config = path.join(base, 'Emuladores', 'RetroArch-Win64', 'retroarch.cfg')
+  const retroarch = path.join(base, 'Emuladores', 'RetroArch-Win64', 'retroarch.exe')
+  const game = resolveGamePath(base, carpeta, archivo)
+
+  // Código para que los clientes puedan conectarse
+  const gamekey = Math.random().toString(36).substring(2, 8).toUpperCase()
+
+  const args = [
+    '-L', core,
+    '--config', config,
+    ...getOnlineArgs(),
+    '--host',
+    '--fullscreen',
+    game
+  ]
+
+  const proc = spawn(retroarch, args, {
+    detached: true,
+    stdio: 'ignore',
+    cwd: path.join(base, 'Emuladores', 'RetroArch-Win64')
+  })
+
+  currentGameProcess = proc
+  updatePresence(archivo.replace('.cue', '') + ' (4p)').catch(() => {})
+  proc.on('close', () => {
+    if (currentGameProcess === proc) currentGameProcess = null
+    setOffline().catch(() => {})
+  })
+  proc.on('error', (err) => console.error('Error spawn RetroArch 4p:', err.message))
+  proc.unref()
+
+  return { success: true, gamekey }
+}
+
+module.exports = { jugar, jugarMultijugador, jugarMultijugador4, conectarSala, conectarSalaMednafen, startNetplay, killCurrentGame, isGameRunning }

@@ -1,16 +1,75 @@
 {
-  "name": "retroplay-electron",
+  "name": "gamingrevs",
   "version": "1.0.0",
-  "description": "RetroPlay Electron App with RetroArch Netplay",
+  "description": "GamingRevs — Launcher de PS1 con netplay",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
-    "electron": "^25.0.0"
+    "electron": "^25.0.0",
+    "electron-updater": "^6.1.7",
+    "yauzl": "^2.10.0"
   },
   "devDependencies": {
-    "docx": "^9.7.1"
+    "docx": "^9.7.1",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.gamingrevs.launcher",
+    "productName": "GamingRevs",
+    "copyright": "Copyright © 2025 GamingRevs",
+    "asar": true,
+    "files": [
+      "**/*",
+      "!games/**",
+      "!**/*.cue",
+      "!**/*.bin",
+      "!**/*.img",
+      "!Emuladores/mednafen-1.32.1-win64/firmware/**",
+      "!userData.json",
+      "!node_modules/docx/**"
+    ],
+    "extraResources": [
+      {
+        "from": "Emuladores",
+        "to": "Emuladores",
+        "filter": ["**/*", "!**/firmware/**"]
+      },
+      {
+        "from": "RetroArch-Win64",
+        "to": "RetroArch-Win64",
+        "filter": ["**/*"]
+      },
+      {
+        "from": "pngLogos",
+        "to": "pngLogos"
+      },
+      {
+        "from": "html",
+        "to": "html"
+      }
+    ],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "pngLogos/logoPrimary.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "GamingRevs"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "AntonioPCGamer",
+        "repo": "NewGameRev",
+        "releaseType": "release"
+      }
+    ]
   }
 }
