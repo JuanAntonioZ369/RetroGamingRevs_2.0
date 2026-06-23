@@ -47,6 +47,7 @@
       "!**/*.sql",
       "!**/*.docx",
       "!.claude/**",
+      "!.nvmrc",
       "!dist/**",
       "!CLAUDE.md",
       "!installer.nsh",
@@ -81,6 +82,9 @@
         "releaseType": "release"
       }
     ]
+  },
+  "engines": {
+    "node": "18.x"
   },
   "allowScripts": {
     "electron-winstaller@5.4.0": true,
